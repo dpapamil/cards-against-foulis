@@ -6,4 +6,24 @@
     android:layout_height="match_parent"
     tools:context=".GameActivity">
 
+    <!-- "PLEASE WAIT" SCREEN -->
+    <LinearLayout android:id="@+id/screen_wait" style="@style/LLScreen">
+        <TextView style="@style/Blurb" android:text="@string/please_wait" />
+    </LinearLayout>
+
+    <!-- GAMEPLAY SCREEN -->
+    <LinearLayout android:id="@+id/screen_game" style="@style/LLScreen">
+
+        <TextView android:id="@+id/my_score" style="@style/ScoreDisplay" />
+
+        <TextView android:id="@+id/countdown" style="@style/FigureLabel" />
+
+        <LinearLayout style="@style/ScoresBox">
+            <TextView android:id="@+id/score0" style="@style/ScoreText" />
+            <TextView android:id="@+id/score1" style="@style/ScoreText" />
+            <TextView android:id="@+id/score2" style="@style/ScoreText" />
+            <TextView android:id="@+id/score3" style="@style/ScoreText" />
+        </LinearLayout>
+    </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>

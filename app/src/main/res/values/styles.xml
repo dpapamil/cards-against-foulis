@@ -21,13 +21,6 @@ limitations under the License. -->
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
-        <color name="AccentColor">#cc0000</color>
-        <color name="PopupColor">@color/AccentColor</color>
-        <color name="PopupTextColor">#ffffff</color>
-        <color name="ButtonTextColor">#ffffff</color>
-        <color name="BlurbColor">#a0a0a0</color>
-        <color name="SignOutButtonBackground">#e0e0e0</color>
-        <color name="SignOutButtonTextColor">#404040</color>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -51,6 +44,13 @@ limitations under the License. -->
     </style>
 
 
+    <color name="AccentColor">#cc0000</color>
+    <color name="PopupColor">@color/AccentColor</color>
+    <color name="PopupTextColor">#ffffff</color>
+    <color name="ButtonTextColor">#ffffff</color>
+    <color name="BlurbColor">#a0a0a0</color>
+    <color name="SignOutButtonBackground">#e0e0e0</color>
+    <color name="SignOutButtonTextColor">#404040</color>
 
     <dimen name="TitleSize">30sp</dimen>
 
@@ -101,6 +101,16 @@ limitations under the License. -->
         <item name="android:textColor">@color/ButtonTextColor</item>
         <item name="android:paddingLeft">10dp</item>
         <item name="android:paddingRight">10dp</item>
+    </style>
+
+
+    <style name="GameTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:text">@string/game_title</item>
+        <item name="android:textColor">@color/AccentColor</item>
+        <item name="android:textSize">@dimen/TitleSize</item>
+        <item name="android:layout_marginBottom">40dp</item>
     </style>
 
     <style name="MainScreenButton" parent="@style/GameButton">
