@@ -29,7 +29,7 @@ public class CardsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cards);
 
         Intent intent = getIntent();
-        String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
+        String message = intent.getStringExtra(MainActivity.WHITE_CARDS);
         mIsWhite = message.equals("white");
 
         // Capture the layout's TextView and set the string as its text

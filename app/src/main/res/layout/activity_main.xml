@@ -30,7 +30,8 @@ So, we are leaving the template code in. -->
         <TextView style="@style/GameTitle" />
 
         <com.google.android.gms.common.SignInButton android:id="@+id/button_sign_in"
-            style="@style/SignInButton" />
+            style="@style/SignInButton"
+            android:onClick="onSignIn"/>
     </LinearLayout>
 
     <!-- MAIN SCREEN -->
@@ -38,11 +39,13 @@ So, we are leaving the template code in. -->
         <TextView style="@style/GameTitle" />
         <Button android:id="@+id/button_see_invitations"
             style="@style/MainScreenButton"
-            android:text="@string/see_invitations" />
+            android:text="@string/see_invitations"
+            android:onClick="onShowInvitations"/>
 
         <Button android:id="@+id/button_sign_out"
             style="@style/SignOutButton"
-            android:text="@string/sign_out" />
+            android:text="@string/sign_out"
+            android:onClick="onSignOut"/>
 
         <Button
             android:id="@+id/white_cards_btn"
@@ -65,12 +68,6 @@ So, we are leaving the template code in. -->
             android:text="@string/start_game"
             android:onClick="onStartGame"/>
 
-        <Button
-            android:id="@+id/sign_in_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/sign_in"
-            android:onClick="onSignIn"/>
     </LinearLayout>
 
     <!-- INVITATION POPUP -->
@@ -78,7 +75,8 @@ So, we are leaving the template code in. -->
         <TextView android:id="@+id/incoming_invitation_text" style="@style/InvPopupText" />
         <Button android:id="@+id/button_accept_popup_invitation"
             style="@style/InvPopupButton"
-            android:text="@string/accept_popup_invite" />
+            android:text="@string/accept_popup_invite"
+            android:onClick="onAcceptInvitation"/>
     </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

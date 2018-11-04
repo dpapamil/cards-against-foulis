@@ -6,6 +6,14 @@
     android:layout_height="match_parent"
     tools:context=".GameActivity">
 
+    <!-- SIGN-IN SCREEN -->
+    <LinearLayout android:id="@+id/screen_sign_in2" style="@style/LLScreen">
+        <TextView style="@style/GameTitle" />
+
+        <com.google.android.gms.common.SignInButton android:id="@+id/button_sign_in2"
+            style="@style/SignInButton" />
+    </LinearLayout>
+
     <!-- "PLEASE WAIT" SCREEN -->
     <LinearLayout android:id="@+id/screen_wait" style="@style/LLScreen">
         <TextView style="@style/Blurb" android:text="@string/please_wait" />
