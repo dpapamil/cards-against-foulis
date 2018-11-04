@@ -88,9 +88,15 @@ public class GameActivity extends AppCompatActivity {
     String mInviterId = null;
     String mHostId = null;
 
+    boolean mIsHost = false;
+
     // If non-null, this is the id of the invitation we received via the
     // invitation listener
     String mIncomingInvitationId = null;
+
+    // The black cards
+    List<Card> mBlackCards;
+    int mCurBlackCardPos;
 
     // Message buffer for sending messages
     byte[] mMsgBuf = new byte[2];
@@ -102,6 +108,20 @@ public class GameActivity extends AppCompatActivity {
 
         // Create the client used to sign in.
         mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+
+        // Sign in silently
+        signInSilently();
+
+        // Check to see if we are starting the game or we're just an invitee
+        Intent intent = getIntent();
+        String invitationId = intent.getStringExtra(MainActivity.INVITATION_ID);
+        if (invitationId != null) {
+            mHostId = intent.getStringExtra(MainActivity.INVITER_ID);
+            startGameFromInvitation(invitationId);
+        } else {
+            startHostGame();
+        }
+
         switchToMainScreen();
     }
 
@@ -118,28 +138,67 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-
-        // unregister our listeners.  They will be re-registered via onResume->signInSilently->onConnected.
-        if (mInvitationsClient != null) {
-            mInvitationsClient.unregisterInvitationCallback(mInvitationCallback);
-        }
     }
 
-    void startGame() {
-        // quick-start a game with 1 randomly selected opponent
-        final int MIN_OPPONENTS = 1, MAX_OPPONENTS = 1;
-        Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_OPPONENTS,
-                MAX_OPPONENTS, 0);
+
+    // Handler for getting the next black card, ie starting the next round
+    public void onGetNextBlackCard(View view) {
+
+    }
+
+    private void populateCards() {
+        CardRepository cardRepository = new CardRepository(getApplication());
+        mBlackCards = cardRepository.getAllBlackCards().getValue();
+        mCurBlackCardPos = 0;
+    }
+
+    // Event handler for clicking the Sign In button
+    public void onSignIn(View view) {
+        // start the sign-in flow
+        Log.d(TAG, "Sign-in button clicked");
+        startSignInIntent();
+    }
+
+    // Start a game as a host
+    private void startHostGame() {
+        mIsHost = true;
+        mHostId = mPlayerId;
+
+        // Show the wait screen
+        switchToScreen(R.id.screen_wait);
+
+        // show list of invitable players
+        mRealTimeMultiplayerClient.getSelectOpponentsIntent(1, 3).addOnSuccessListener(
+            new OnSuccessListener<Intent>() {
+                @Override
+                public void onSuccess(Intent intent) {
+                    startActivityForResult(intent, RC_SELECT_PLAYERS);
+                }
+            }
+        ).addOnFailureListener(createFailureListener("There was a problem selecting opponents."));
+    }
+
+    private void startGameFromInvitation(String invitationId) {
+        // accept the invitation
+        Log.d(TAG, "Accepting invitation: " + invitationId);
+
+        mRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
+            .setInvitationIdToAccept(invitationId)
+            .setOnMessageReceivedListener(mOnRealTimeMessageReceivedListener)
+            .setRoomStatusUpdateCallback(mRoomStatusUpdateCallback)
+            .build();
+
         switchToScreen(R.id.screen_wait);
         keepScreenOn();
         resetGameVars();
 
-        mRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
-                .setOnMessageReceivedListener(mOnRealTimeMessageReceivedListener)
-                .setRoomStatusUpdateCallback(mRoomStatusUpdateCallback)
-                .setAutoMatchCriteria(autoMatchCriteria)
-                .build();
-        mRealTimeMultiplayerClient.create(mRoomConfig);
+        mRealTimeMultiplayerClient.join(mRoomConfig)
+            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d(TAG, "Room Joined Successfully!");
+                }
+            });
     }
 
     /**
@@ -316,7 +375,8 @@ public class GameActivity extends AppCompatActivity {
         int maxAutoMatchPlayers = data.getIntExtra(Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
         if (minAutoMatchPlayers > 0 || maxAutoMatchPlayers > 0) {
             autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
-                    minAutoMatchPlayers, maxAutoMatchPlayers, 0);
+                minAutoMatchPlayers, maxAutoMatchPlayers, 0
+            );
             Log.d(TAG, "Automatch criteria: " + autoMatchCriteria);
         }
 
@@ -327,37 +387,12 @@ public class GameActivity extends AppCompatActivity {
         resetGameVars();
 
         mRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
-                .addPlayersToInvite(invitees)
-                .setOnMessageReceivedListener(mOnRealTimeMessageReceivedListener)
-                .setRoomStatusUpdateCallback(mRoomStatusUpdateCallback)
-                .setAutoMatchCriteria(autoMatchCriteria).build();
+            .addPlayersToInvite(invitees)
+            .setOnMessageReceivedListener(mOnRealTimeMessageReceivedListener)
+            .setRoomStatusUpdateCallback(mRoomStatusUpdateCallback)
+            .setAutoMatchCriteria(autoMatchCriteria).build();
         mRealTimeMultiplayerClient.create(mRoomConfig);
         Log.d(TAG, "Room created, waiting for it to be ready...");
-    }
-
-
-    // Accept the given invitation.
-    void acceptInviteToRoom(String invitationId) {
-        // accept the invitation
-        Log.d(TAG, "Accepting invitation: " + invitationId);
-
-        mRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
-                .setInvitationIdToAccept(invitationId)
-                .setOnMessageReceivedListener(mOnRealTimeMessageReceivedListener)
-                .setRoomStatusUpdateCallback(mRoomStatusUpdateCallback)
-                .build();
-
-        switchToScreen(R.id.screen_wait);
-        keepScreenOn();
-        resetGameVars();
-
-        mRealTimeMultiplayerClient.join(mRoomConfig)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "Room Joined Successfully!");
-                    }
-                });
     }
 
     // Activity is going to the background. We have to leave the current room.
@@ -376,35 +411,35 @@ public class GameActivity extends AppCompatActivity {
         super.onStop();
     }
 
-    // Handle back key to make sure we cleanly leave a game if we are in the middle of one
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent e) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && mCurScreen == R.id.screen_game) {
-            leaveRoom();
-            return true;
-        }
-        return super.onKeyDown(keyCode, e);
-    }
-
-    // Leave the room.
-    void leaveRoom() {
-        Log.d(TAG, "Leaving room.");
-        mSecondsLeft = 0;
-        stopKeepingScreenOn();
-        if (mRoomId != null) {
-            mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            mRoomId = null;
-                            mRoomConfig = null;
-                        }
-                    });
-            switchToScreen(R.id.screen_wait);
-        } else {
-            switchToMainScreen();
-        }
-    }
+//    // Handle back key to make sure we cleanly leave a game if we are in the middle of one
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent e) {
+//        if (keyCode == KeyEvent.KEYCODE_BACK && mCurScreen == R.id.screen_game) {
+//            leaveRoom();
+//            return true;
+//        }
+//        return super.onKeyDown(keyCode, e);
+//    }
+//
+//    // Leave the room.
+//    void leaveRoom() {
+//        Log.d(TAG, "Leaving room.");
+//        mSecondsLeft = 0;
+//        stopKeepingScreenOn();
+//        if (mRoomId != null) {
+//            mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId)
+//                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<Void> task) {
+//                            mRoomId = null;
+//                            mRoomConfig = null;
+//                        }
+//                    });
+//            switchToScreen(R.id.screen_wait);
+//        } else {
+//            switchToMainScreen();
+//        }
+//    }
 
     // Show the waiting room UI to track the progress of other players as they enter the
     // room and get connected.
@@ -414,39 +449,15 @@ public class GameActivity extends AppCompatActivity {
         // (this is signaled by Integer.MAX_VALUE).
         final int MIN_PLAYERS = Integer.MAX_VALUE;
         mRealTimeMultiplayerClient.getWaitingRoomIntent(room, MIN_PLAYERS)
-                .addOnSuccessListener(new OnSuccessListener<Intent>() {
-                    @Override
-                    public void onSuccess(Intent intent) {
-                        // show waiting room UI
-                        startActivityForResult(intent, RC_WAITING_ROOM);
-                    }
-                })
-                .addOnFailureListener(createFailureListener("There was a problem getting the waiting room!"));
+            .addOnSuccessListener(new OnSuccessListener<Intent>() {
+                @Override
+                public void onSuccess(Intent intent) {
+                    // show waiting room UI
+                    startActivityForResult(intent, RC_WAITING_ROOM);
+                }
+            })
+            .addOnFailureListener(createFailureListener("There was a problem getting the waiting room!"));
     }
-
-    private InvitationCallback mInvitationCallback = new InvitationCallback() {
-        // Called when we get an invitation to play a game. We react by showing that to the user.
-        @Override
-        public void onInvitationReceived(@NonNull Invitation invitation) {
-            // We got an invitation to play a game! So, store it in
-            // mIncomingInvitationId
-            // and show the popup on the screen.
-            mIncomingInvitationId = invitation.getInvitationId();
-            ((TextView) findViewById(R.id.incoming_invitation_text)).setText(
-                    invitation.getInviter().getDisplayName() + " " +
-                            getString(R.string.is_inviting_you));
-            switchToScreen(mCurScreen); // This will show the invitation popup
-        }
-
-        @Override
-        public void onInvitationRemoved(@NonNull String invitationId) {
-
-            if (mIncomingInvitationId.equals(invitationId) && mIncomingInvitationId != null) {
-                mIncomingInvitationId = null;
-                switchToScreen(mCurScreen); // This will hide the invitation popup
-            }
-        }
-    };
 
     /*
      * CALLBACKS SECTION. This section shows how we implement the several games
@@ -466,46 +477,20 @@ public class GameActivity extends AppCompatActivity {
 
             // update the clients
             mRealTimeMultiplayerClient = Games.getRealTimeMultiplayerClient(this, googleSignInAccount);
-            mInvitationsClient = Games.getInvitationsClient(GameActivity.this, googleSignInAccount);
 
             // get the playerId from the PlayersClient
             PlayersClient playersClient = Games.getPlayersClient(this, googleSignInAccount);
             playersClient.getCurrentPlayer()
-                    .addOnSuccessListener(new OnSuccessListener<Player>() {
-                        @Override
-                        public void onSuccess(Player player) {
-                            mPlayerId = player.getPlayerId();
-
-                            switchToMainScreen();
-                        }
-                    })
-                    .addOnFailureListener(createFailureListener("There was a problem getting the player id!"));
-        }
-
-        // register listener so we are notified if we receive an invitation to play
-        // while we are in the game
-        mInvitationsClient.registerInvitationCallback(mInvitationCallback);
-
-        // get the invitation from the connection hint
-        // Retrieve the TurnBasedMatch from the connectionHint
-        GamesClient gamesClient = Games.getGamesClient(GameActivity.this, googleSignInAccount);
-        gamesClient.getActivationHint()
-                .addOnSuccessListener(new OnSuccessListener<Bundle>() {
+                .addOnSuccessListener(new OnSuccessListener<Player>() {
                     @Override
-                    public void onSuccess(Bundle hint) {
-                        if (hint != null) {
-                            Invitation invitation =
-                                    hint.getParcelable(Multiplayer.EXTRA_INVITATION);
+                    public void onSuccess(Player player) {
+                        mPlayerId = player.getPlayerId();
 
-                            if (invitation != null && invitation.getInvitationId() != null) {
-                                // retrieve and cache the invitation ID
-                                Log.d(TAG, "onConnected: connection hint has a room invite!");
-                                acceptInviteToRoom(invitation.getInvitationId());
-                            }
-                        }
+                        switchToMainScreen();
                     }
                 })
-                .addOnFailureListener(createFailureListener("There was a problem getting the activation hint!"));
+                .addOnFailureListener(createFailureListener("There was a problem getting the player id!"));
+        }
     }
 
     private OnFailureListener createFailureListener(final String string) {
@@ -521,9 +506,29 @@ public class GameActivity extends AppCompatActivity {
         Log.d(TAG, "onDisconnected()");
 
         mRealTimeMultiplayerClient = null;
-        mInvitationsClient = null;
 
         switchToMainScreen();
+    }
+
+
+    // Leave the room.
+    private void leaveRoom() {
+        Log.d(TAG, "Leaving room.");
+        mSecondsLeft = 0;
+        stopKeepingScreenOn();
+        if (mRoomId != null) {
+            mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        mRoomId = null;
+                        mRoomConfig = null;
+                    }
+                });
+            switchToScreen(R.id.screen_wait);
+        } else {
+            switchToMainScreen();
+        }
     }
 
     private RoomStatusUpdateCallback mRoomStatusUpdateCallback = new RoomStatusUpdateCallback() {
@@ -536,6 +541,7 @@ public class GameActivity extends AppCompatActivity {
             //get participants and my ID:
             mParticipants = room.getParticipants();
             mMyId = room.getParticipantId(mPlayerId);
+
 
             // save room ID if its not initialized in onRoomCreated() so we can leave cleanly before the game starts.
             if (mRoomId == null) {
@@ -701,35 +707,25 @@ public class GameActivity extends AppCompatActivity {
     void startGame() {
         switchToScreen(R.id.screen_game);
 
-        // run the gameTick() method every second to update the game.
-        final Handler h = new Handler();
-        h.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mSecondsLeft <= 0) {
-                    return;
-                }
-                gameTick();
-                h.postDelayed(this, 1000);
-            }
-        }, 1000);
-    }
-
-    // Game tick -- update countdown, check if game ended.
-    void gameTick() {
-        if (mSecondsLeft > 0) {
-            --mSecondsLeft;
+        if (mIsHost) {
+            populateCards();
         }
 
-        // update countdown
-        ((TextView) findViewById(R.id.countdown)).setText("0:" +
-                (mSecondsLeft < 10 ? "0" : "") + String.valueOf(mSecondsLeft));
+        updateBlackCard();
+    }
 
-        if (mSecondsLeft <= 0) {
-            // finish game
+    private void updateBlackCard() {
+        if (mIsHost) {
+            Card curBlackCard = mBlackCards.get(mCurBlackCardPos);
+            updateBlackCardView(curBlackCard.getText());
+            sendBlackCard(curBlackCard);
         }
     }
 
+    private void updateBlackCardView(String blackCardText) {
+        TextView blackCardView = findViewById(R.id.cur_black_card);
+        blackCardView.setText(blackCardText);
+    }
 
     /*
      * COMMUNICATIONS SECTION. Methods that implement the game's network
@@ -747,21 +743,18 @@ public class GameActivity extends AppCompatActivity {
         public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
             byte[] buf = realTimeMessage.getMessageData();
             String sender = realTimeMessage.getSenderParticipantId();
-            Log.d(TAG, "Message received: " + (char) buf[0] + "/" + (int) buf[1]);
-
+            String msg = buf.toString();
+            Log.d(TAG, "Message received: " + msg);
+            updateBlackCardView(msg);
         }
     };
 
-    // Broadcast my score to everybody else.
-    void broadcastScore(boolean finalScore) {
+    private void sendBlackCard(Card blackCard) {
+        if (!mIsHost) {
+            return;
+        }
 
-        // First byte in message indicates whether it's a final score or not
-        mMsgBuf[0] = (byte) (finalScore ? 'F' : 'U');
-
-        // Second byte is the score.
-        mMsgBuf[1] = (byte) mScore;
-
-        // Send to every other participant.
+        byte[] msgBuf = blackCard.getText().getBytes();
         for (Participant p : mParticipants) {
             if (p.getParticipantId().equals(mMyId)) {
                 continue;
@@ -769,29 +762,21 @@ public class GameActivity extends AppCompatActivity {
             if (p.getStatus() != Participant.STATUS_JOINED) {
                 continue;
             }
-//            if (finalScore) {
-//                // final score notification must be sent via reliable message
-//                mRealTimeMultiplayerClient.sendReliableMessage(mMsgBuf,
-//                        mRoomId, p.getParticipantId(), new RealTimeMultiplayerClient.ReliableMessageSentCallback() {
-//                            @Override
-//                            public void onRealTimeMessageSent(int statusCode, int tokenId, String recipientParticipantId) {
-//                                Log.d(TAG, "RealTime message sent");
-//                                Log.d(TAG, "  statusCode: " + statusCode);
-//                                Log.d(TAG, "  tokenId: " + tokenId);
-//                                Log.d(TAG, "  recipientParticipantId: " + recipientParticipantId);
-//                            }
-//                        })
-//                        .addOnSuccessListener(new OnSuccessListener<Integer>() {
-//                            @Override
-//                            public void onSuccess(Integer tokenId) {
-//                                Log.d(TAG, "Created a reliable message with tokenId: " + tokenId);
-//                            }
-//                        });
-//            } else {
-//                // it's an interim score notification, so we can use unreliable
-//                mRealTimeMultiplayerClient.sendUnreliableMessage(mMsgBuf, mRoomId,
-//                        p.getParticipantId());
-//            }
+            mRealTimeMultiplayerClient.sendReliableMessage(msgBuf, mRoomId, p.getParticipantId(), new RealTimeMultiplayerClient.ReliableMessageSentCallback() {
+                @Override
+                public void onRealTimeMessageSent(int statusCode, int tokenId, String recipientParticipantId) {
+                    Log.d(TAG, "RealTime message sent");
+                    Log.d(TAG, "  statusCode: " + statusCode);
+                    Log.d(TAG, "  tokenId: " + tokenId);
+                    Log.d(TAG, "  recipientParticipantId: " + recipientParticipantId);
+                }
+            })
+            .addOnSuccessListener(new OnSuccessListener<Integer>() {
+                @Override
+                public void onSuccess(Integer tokenId) {
+                    Log.d(TAG, "Created a reliable message with tokenId: " + tokenId);
+                }
+            });
         }
     }
 

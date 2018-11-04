@@ -38,6 +38,8 @@ limitations under the License. -->
     <string name='match_error_locally_modified'>This match has locally-modified data.  This operation cannot be performed until the match is sent to the server.</string>
     <string name="empty_not_saved">Word not saved because it is empty.</string>
 
+    <string name="next_black_card">Next Round</string>
+
     <string name="invite_players">Invite friends</string>
     <string name="see_invitations">See invitations</string>
     <string name="invite_players_explanation">Invite friends to play a game.</string>

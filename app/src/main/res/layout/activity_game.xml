@@ -10,8 +10,10 @@
     <LinearLayout android:id="@+id/screen_sign_in2" style="@style/LLScreen">
         <TextView style="@style/GameTitle" />
 
-        <com.google.android.gms.common.SignInButton android:id="@+id/button_sign_in2"
-            style="@style/SignInButton" />
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/button_sign_in2"
+            style="@style/SignInButton"
+            android:onClick="onSignIn"/>
     </LinearLayout>
 
     <!-- "PLEASE WAIT" SCREEN -->
@@ -22,16 +24,18 @@
     <!-- GAMEPLAY SCREEN -->
     <LinearLayout android:id="@+id/screen_game" style="@style/LLScreen">
 
-        <TextView android:id="@+id/my_score" style="@style/ScoreDisplay" />
-
         <TextView android:id="@+id/countdown" style="@style/FigureLabel" />
 
         <LinearLayout style="@style/ScoresBox">
-            <TextView android:id="@+id/score0" style="@style/ScoreText" />
-            <TextView android:id="@+id/score1" style="@style/ScoreText" />
-            <TextView android:id="@+id/score2" style="@style/ScoreText" />
-            <TextView android:id="@+id/score3" style="@style/ScoreText" />
+            <TextView android:id="@+id/cur_black_card" style="@style/ScoreText" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/next_black_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/next_black_card"
+            android:onClick="onGetNextBlackCard"/>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

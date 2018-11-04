@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create the client used to sign in.
         mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        switchToMainScreen();
     }
 
     void switchToMainScreen() {
