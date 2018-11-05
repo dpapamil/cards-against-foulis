@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create the client used to sign in.
         mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        //signInSilently();
         switchToMainScreen();
     }
 
@@ -193,12 +194,12 @@ public class MainActivity extends AppCompatActivity {
     public void onShowInvitations(View view) {
         // show list of pending invitations
         mInvitationsClient.getInvitationInboxIntent().addOnSuccessListener(
-                new OnSuccessListener<Intent>() {
-                    @Override
-                    public void onSuccess(Intent intent) {
-                        startActivityForResult(intent, RC_INVITATION_INBOX);
-                    }
+            new OnSuccessListener<Intent>() {
+                @Override
+                public void onSuccess(Intent intent) {
+                startActivityForResult(intent, RC_INVITATION_INBOX);
                 }
+            }
         ).addOnFailureListener(createFailureListener("There was a problem getting the inbox."));
     }
 
@@ -416,6 +417,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             })
             .addOnFailureListener(createFailureListener("There was a problem getting the activation hint!"));
+
+        switchToMainScreen();
     }
 
     private OnFailureListener createFailureListener(final String string) {
