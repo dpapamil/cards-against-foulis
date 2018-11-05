@@ -29,7 +29,7 @@ So, we are leaving the template code in. -->
     <LinearLayout android:id="@+id/screen_sign_in" style="@style/LLScreen">
         <TextView style="@style/GameTitle" />
 
-        <com.google.android.gms.common.SignInButton android:id="@+id/button_sign_in"
+        <Button android:id="@+id/button_sign_in"
             style="@style/SignInButton"
             android:onClick="onSignIn"/>
     </LinearLayout>
