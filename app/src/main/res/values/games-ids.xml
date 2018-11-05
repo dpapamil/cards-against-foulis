@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Google Play game services IDs.
+Save this file as res/values/games-ids.xml in your project.
+-->
+<resources>
+    <!-- app_id -->
+    <string name="app_id" translatable="false">921729056638</string>
+    <!-- package_name -->
+    <string name="package_name" translatable="false">com.papamilios.dimitris.cardsagainstfoulis</string>
+    <!-- achievement First Card -->
+    <string name="achievement_first_card" translatable="false">CgkI_v7U2ukaEAIQAg</string>
+    <!-- achievement First Czar -->
+    <string name="achievement_first_czar" translatable="false">CgkI_v7U2ukaEAIQAw</string>
+    <!-- achievement First Time Inviter -->
+    <string name="achievement_first_time_inviter" translatable="false">CgkI_v7U2ukaEAIQBA</string>
+    <!-- achievement 100th Card -->
+    <string name="achievement_100th_card" translatable="false">CgkI_v7U2ukaEAIQBQ</string>
+    <!-- achievement 200th Card -->
+    <string name="achievement_200th_card" translatable="false">CgkI_v7U2ukaEAIQBg</string>
+</resources>
