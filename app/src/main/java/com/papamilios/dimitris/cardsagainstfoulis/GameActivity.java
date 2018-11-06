@@ -86,6 +86,7 @@ public class GameActivity extends AppCompatActivity {
     String mMyId = null;
 
     String mInviterId = null;
+    String mInvitationId = null;
     String mHostId = null;
 
     boolean mIsHost = false;
@@ -117,9 +118,7 @@ public class GameActivity extends AppCompatActivity {
         String invitationId = intent.getStringExtra(MainActivity.INVITATION_ID);
         if (invitationId != null) {
             mHostId = intent.getStringExtra(MainActivity.INVITER_ID);
-            startGameFromInvitation(invitationId);
-        } else {
-            startHostGame();
+            mInvitationId = invitationId;
         }
 
         switchToMainScreen();
@@ -485,6 +484,12 @@ public class GameActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Player player) {
                         mPlayerId = player.getPlayerId();
+
+                        if (mInvitationId != null) {
+                            startGameFromInvitation(mInvitationId);
+                        } else {
+                            startHostGame();
+                        }
 
                         switchToMainScreen();
                     }
