@@ -103,9 +103,8 @@ public class MainActivity extends AppCompatActivity {
     // The currently signed in account, used to check the account has changed outside of this activity when resuming.
     GoogleSignInAccount mSignedInAccount = null;
 
-    // If non-null, this is the id of the invitation we received via the
-    // invitation listener
-    String mIncomingInvitationId = null;
+    // If non-null, this is the invitation we received via the invitation listener
+    Invitation mIncomingInvitation = null;
 
     // This array lists all the individual screens our game has.
     final static int[] SCREENS = {
@@ -143,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
         // should we show the invitation popup?
         boolean showInvPopup;
-        if (mIncomingInvitationId == null) {
+        if (mIncomingInvitation == null) {
             // no invitation, so no popup
             showInvPopup = false;
         } else {
@@ -201,6 +200,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         ).addOnFailureListener(createFailureListener("There was a problem getting the inbox."));
+    }
+
+    // Event handler for clicking the Show Invitations button
+    public void onAcceptInvitation(View view) {
+        acceptInviteToRoom(mIncomingInvitation);
     }
 
     /**
@@ -332,6 +336,7 @@ public class MainActivity extends AppCompatActivity {
                     .setNeutralButton(android.R.string.ok, null)
                     .show();
             }
+
         } else if (requestCode == RC_INVITATION_INBOX) {
             // we got the result from the "select invitation" UI (invitation inbox). We're
             // ready to accept the selected invitation:
@@ -367,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
             // We got an invitation to play a game! So, store it in
             // mIncomingInvitationId
             // and show the popup on the screen.
-            mIncomingInvitationId = invitation.getInvitationId();
+            mIncomingInvitation = invitation;
             ((TextView) findViewById(R.id.incoming_invitation_text)).setText(
                     invitation.getInviter().getDisplayName() + " " +
                             getString(R.string.is_inviting_you));
@@ -377,8 +382,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onInvitationRemoved(@NonNull String invitationId) {
 
-            if (mIncomingInvitationId.equals(invitationId) && mIncomingInvitationId != null) {
-                mIncomingInvitationId = null;
+            if (mIncomingInvitation.getInvitationId().equals(invitationId) && mIncomingInvitation.getInvitationId() != null) {
+                mIncomingInvitation = null;
                 switchToScreen(mCurScreen); // This will hide the invitation popup
             }
         }
