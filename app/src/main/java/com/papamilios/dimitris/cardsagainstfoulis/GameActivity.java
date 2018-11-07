@@ -2,9 +2,12 @@ package com.papamilios.dimitris.cardsagainstfoulis;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -42,6 +45,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -143,12 +148,6 @@ public class GameActivity extends AppCompatActivity {
     // Handler for getting the next black card, ie starting the next round
     public void onGetNextBlackCard(View view) {
 
-    }
-
-    private void populateCards() {
-        CardRepository cardRepository = new CardRepository(getApplication());
-        mBlackCards = cardRepository.getAllBlackCards().getValue();
-        mCurBlackCardPos = 0;
     }
 
     // Event handler for clicking the Sign In button
@@ -715,8 +714,20 @@ public class GameActivity extends AppCompatActivity {
         if (mIsHost) {
             populateCards();
         }
+    }
 
-        updateBlackCard();
+    private void populateCards() {
+        CardRoomDatabase cardDatabase = CardRoomDatabase.getDatabase(getApplication());
+        mCurBlackCardPos = 0;
+        LiveData<List<Card>> blackCards = cardDatabase.cardDao().getAllBlackCards();
+        blackCards.observe(this,  new Observer<List<Card>>() {
+
+            @Override
+            public void onChanged(@Nullable final List<Card> cards) {
+                mBlackCards = cards;
+                updateBlackCard();
+            }
+        });
     }
 
     private void updateBlackCard() {
@@ -748,7 +759,7 @@ public class GameActivity extends AppCompatActivity {
         public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
             byte[] buf = realTimeMessage.getMessageData();
             String sender = realTimeMessage.getSenderParticipantId();
-            String msg = buf.toString();
+            String msg = new String(buf, Charset.defaultCharset());
             Log.d(TAG, "Message received: " + msg);
             updateBlackCardView(msg);
         }
@@ -759,7 +770,7 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
 
-        byte[] msgBuf = blackCard.getText().getBytes();
+        byte[] msgBuf = blackCard.getText().getBytes(Charset.defaultCharset());
         for (Participant p : mParticipants) {
             if (p.getParticipantId().equals(mMyId)) {
                 continue;
