@@ -19,7 +19,7 @@ import java.util.List;
 
 public class CardsActivity extends AppCompatActivity {
 
-    public static final int NEW_WORD_ACTIVITY_REQUEST_CODE = 1;
+    public static final int NEW_CARD_ACTIVITY_REQUEST_CODE = 1;
 
     private CardViewModel mCardViewModel;
     private boolean mIsWhite;
@@ -63,7 +63,7 @@ public class CardsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
             Intent intent = new Intent(CardsActivity.this, NewCardActivity.class);
-            startActivityForResult(intent, NEW_WORD_ACTIVITY_REQUEST_CODE);
+            startActivityForResult(intent, NEW_CARD_ACTIVITY_REQUEST_CODE);
             }
         });
     }
@@ -71,7 +71,7 @@ public class CardsActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == NEW_WORD_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
+        if (requestCode == NEW_CARD_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
             Card card = new Card(0, data.getStringExtra(NewCardActivity.EXTRA_REPLY), mIsWhite);
             mCardViewModel.insert(card);
         } else {
