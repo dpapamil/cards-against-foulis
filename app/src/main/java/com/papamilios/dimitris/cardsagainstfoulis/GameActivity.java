@@ -62,8 +62,10 @@ public class GameActivity extends AppCompatActivity {
 
     // Request codes for the UIs that we show with startActivityForResult:
     final static int RC_SELECT_PLAYERS = 10000;
-    final static int RC_INVITATION_INBOX = 10001;
     final static int RC_WAITING_ROOM = 10002;
+
+    final private static int CURRENT_BLACK_CARD = 0;
+    final private static int GET_NEXT_ROUND = 1;
 
     // Request code used to invoke sign in user interactions.
     private static final int RC_SIGN_IN = 9001;
@@ -111,6 +113,7 @@ public class GameActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        switchToScreen(R.id.screen_wait);
 
         // Create the client used to sign in.
         mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
@@ -125,8 +128,6 @@ public class GameActivity extends AppCompatActivity {
             mHostId = intent.getStringExtra(MainActivity.INVITER_ID);
             mInvitationId = invitationId;
         }
-
-        switchToMainScreen();
     }
 
     @Override
@@ -146,8 +147,8 @@ public class GameActivity extends AppCompatActivity {
 
 
     // Handler for getting the next black card, ie starting the next round
-    public void onGetNextBlackCard(View view) {
-
+    public void onGetNextRound(View view) {
+        onGetNextRound();
     }
 
     // Event handler for clicking the Sign In button
@@ -758,10 +759,27 @@ public class GameActivity extends AppCompatActivity {
         @Override
         public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
             byte[] buf = realTimeMessage.getMessageData();
-            String sender = realTimeMessage.getSenderParticipantId();
-            String msg = new String(buf, Charset.defaultCharset());
+
+            // The first byte should be the type of the message
+            int msgType = (int) buf[0];
+            // The rest should be the actual message
+            byte[] msgBuf = new byte[buf.length - 1];
+            System.arraycopy(buf, 1, msgBuf, 0, buf.length - 1);
+            String msg = new String(msgBuf, Charset.defaultCharset());
             Log.d(TAG, "Message received: " + msg);
-            updateBlackCardView(msg);
+            switch (msgType) {
+                case CURRENT_BLACK_CARD: {
+                    updateBlackCardView(msg);
+                    break;
+                }
+                case GET_NEXT_ROUND: {
+                    onGetNextRound();
+                    break;
+                }
+                default: {
+                    throw new AssertionError("Message type not being handled");
+                }
+            }
         }
     };
 
@@ -771,29 +789,73 @@ public class GameActivity extends AppCompatActivity {
         }
 
         byte[] msgBuf = blackCard.getText().getBytes(Charset.defaultCharset());
+        sendMessageToAll(CURRENT_BLACK_CARD, msgBuf);
+    }
+
+    private void onGetNextRound() {
+        if (!mIsHost) {
+            Participant host = mParticipants.get(0);
+            for (Participant p : mParticipants) {
+                if (p.getParticipantId().equals(mHostId)) {
+                    host = p;
+                    break;
+                }
+            }
+
+            byte[] msg = new byte[0];
+            sendMessage(GET_NEXT_ROUND, msg, host);
+        } else {
+            goToNextCard();
+            updateBlackCard();
+        }
+    }
+
+    // Send the given message to the rest of the participants
+    private void sendMessageToAll(int msgType, byte[] msg) {
         for (Participant p : mParticipants) {
             if (p.getParticipantId().equals(mMyId)) {
                 continue;
             }
-            if (p.getStatus() != Participant.STATUS_JOINED) {
-                continue;
-            }
-            mRealTimeMultiplayerClient.sendReliableMessage(msgBuf, mRoomId, p.getParticipantId(), new RealTimeMultiplayerClient.ReliableMessageSentCallback() {
-                @Override
-                public void onRealTimeMessageSent(int statusCode, int tokenId, String recipientParticipantId) {
-                    Log.d(TAG, "RealTime message sent");
-                    Log.d(TAG, "  statusCode: " + statusCode);
-                    Log.d(TAG, "  tokenId: " + tokenId);
-                    Log.d(TAG, "  recipientParticipantId: " + recipientParticipantId);
-                }
-            })
-            .addOnSuccessListener(new OnSuccessListener<Integer>() {
-                @Override
-                public void onSuccess(Integer tokenId) {
-                    Log.d(TAG, "Created a reliable message with tokenId: " + tokenId);
-                }
-            });
+            sendMessage(msgType, msg, p);
         }
+    }
+
+    // Get the next card
+    private void goToNextCard() {
+        if (mCurBlackCardPos == mBlackCards.size() - 1) {
+            mCurBlackCardPos = 0;
+        } else {
+            mCurBlackCardPos++;
+        }
+    }
+
+    // Send the given message to teh given receiver
+    private void sendMessage(int msgType, byte[] msg, Participant receiver) {
+        if (receiver.getStatus() != Participant.STATUS_JOINED) {
+            return;
+        }
+        // Prepend the message type to the actual message
+        byte[] type = new byte[1];
+        type[0] = (byte) msgType;
+        byte[] msgBuf = new byte[type.length + msg.length];
+        System.arraycopy(type, 0, msgBuf, 0, type.length);
+        System.arraycopy(msg, 0, msgBuf, type.length, msg.length);
+
+        mRealTimeMultiplayerClient.sendReliableMessage(msgBuf, mRoomId, receiver.getParticipantId(), new RealTimeMultiplayerClient.ReliableMessageSentCallback() {
+            @Override
+            public void onRealTimeMessageSent(int statusCode, int tokenId, String recipientParticipantId) {
+                Log.d(TAG, "RealTime message sent");
+                Log.d(TAG, "  statusCode: " + statusCode);
+                Log.d(TAG, "  tokenId: " + tokenId);
+                Log.d(TAG, "  recipientParticipantId: " + recipientParticipantId);
+            }
+        })
+                .addOnSuccessListener(new OnSuccessListener<Integer>() {
+                    @Override
+                    public void onSuccess(Integer tokenId) {
+                        Log.d(TAG, "Created a reliable message with tokenId: " + tokenId);
+                    }
+                });
     }
 
     /*
