@@ -1,4 +1,4 @@
-package com.papamilios.dimitris.cardsagainstfoulis;
+package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
@@ -12,12 +12,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.papamilios.dimitris.cardsagainstfoulis.R;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
+import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
+
 import java.util.List;
+
 
 /*
 *  The activity to interact with either the black or the white cards.

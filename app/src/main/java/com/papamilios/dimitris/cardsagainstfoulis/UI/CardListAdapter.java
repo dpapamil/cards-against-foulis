@@ -1,4 +1,4 @@
-package com.papamilios.dimitris.cardsagainstfoulis;
+package com.papamilios.dimitris.cardsagainstfoulis.UI;
 
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
@@ -8,6 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.papamilios.dimitris.cardsagainstfoulis.R;
+import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +33,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.CardVi
     private final LayoutInflater mInflater;
     private List<Card> mCards = Collections.emptyList(); // Cached copy of words
 
-    CardListAdapter(Context context) {
+    public CardListAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
     }
 
@@ -46,7 +49,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.CardVi
         holder.wordItemView.setText(current.getText());
     }
 
-    void setCards(List<Card> cards) {
+    public void setCards(List<Card> cards) {
         mCards = cards;
         notifyDataSetChanged();
     }

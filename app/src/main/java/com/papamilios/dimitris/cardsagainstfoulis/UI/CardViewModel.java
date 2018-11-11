@@ -1,10 +1,13 @@
-package com.papamilios.dimitris.cardsagainstfoulis;
+package com.papamilios.dimitris.cardsagainstfoulis.UI;
 
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
+
+import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
+import com.papamilios.dimitris.cardsagainstfoulis.database.CardRepository;
 
 import java.util.List;
 
@@ -30,14 +33,14 @@ public class CardViewModel extends AndroidViewModel {
         mBlackCards = mRepository.getAllBlackCards();
     }
 
-    LiveData<List<Card>> getAllWhiteCards() {
+    public LiveData<List<Card>> getAllWhiteCards() {
         return mWhiteCards;
     }
-    LiveData<List<Card>> getAllBlackCards() {
+    public LiveData<List<Card>> getAllBlackCards() {
         return mBlackCards;
     }
 
-    void insert(Card card) {
+    public void insert(Card card) {
         mRepository.insert(card);
     }
 }

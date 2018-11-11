@@ -1,4 +1,4 @@
-package com.papamilios.dimitris.cardsagainstfoulis;
+package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
@@ -9,6 +9,8 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.papamilios.dimitris.cardsagainstfoulis.R;
 
 /**
  * Activity for adding a card.

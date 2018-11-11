@@ -1,4 +1,4 @@
-package com.papamilios.dimitris.cardsagainstfoulis;
+package com.papamilios.dimitris.cardsagainstfoulis.database;
 
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
@@ -23,7 +23,7 @@ public abstract class CardRoomDatabase extends RoomDatabase {
     // marking the instance as volatile to ensure atomic access to the variable
     private static volatile CardRoomDatabase INSTANCE;
 
-    static CardRoomDatabase getDatabase(final Context context) {
+    public static CardRoomDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
             synchronized (CardRoomDatabase.class) {
                 if (INSTANCE == null) {

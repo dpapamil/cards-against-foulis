@@ -1,4 +1,4 @@
-package com.papamilios.dimitris.cardsagainstfoulis;
+package com.papamilios.dimitris.cardsagainstfoulis.database;
 
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
