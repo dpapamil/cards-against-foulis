@@ -170,7 +170,7 @@ public class GameActivity extends AppCompatActivity {
         switchToScreen(R.id.screen_wait);
 
         // show list of invitable players
-        mRealTimeMultiplayerClient.getSelectOpponentsIntent(1, 3).addOnSuccessListener(
+        mRealTimeMultiplayerClient.getSelectOpponentsIntent(1, 4).addOnSuccessListener(
             new OnSuccessListener<Intent>() {
                 @Override
                 public void onSuccess(Intent intent) {
@@ -753,36 +753,31 @@ public class GameActivity extends AppCompatActivity {
      */
 
     // Called when we receive a real-time message from the network.
-    // Messages in our game are made up of 2 bytes: the first one is 'F' or 'U'
-    // indicating
-    // whether it's a final or interim score. The second byte is the score.
-    // There is also the
-    // 'S' message, which indicates that the game should start.
     OnRealTimeMessageReceivedListener mOnRealTimeMessageReceivedListener = new OnRealTimeMessageReceivedListener() {
         @Override
         public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
-            byte[] buf = realTimeMessage.getMessageData();
+        byte[] buf = realTimeMessage.getMessageData();
 
-            // The first byte should be the type of the message
-            int msgType = (int) buf[0];
-            // The rest should be the actual message
-            byte[] msgBuf = new byte[buf.length - 1];
-            System.arraycopy(buf, 1, msgBuf, 0, buf.length - 1);
-            String msg = new String(msgBuf, Charset.defaultCharset());
-            Log.d(TAG, "Message received: " + msg);
-            switch (msgType) {
-                case CURRENT_BLACK_CARD: {
-                    updateBlackCardView(msg);
-                    break;
-                }
-                case GET_NEXT_ROUND: {
-                    onGetNextRound();
-                    break;
-                }
-                default: {
-                    throw new AssertionError("Message type not being handled");
-                }
+        // The first byte should be the type of the message
+        int msgType = (int) buf[0];
+        // The rest should be the actual message
+        byte[] msgBuf = new byte[buf.length - 1];
+        System.arraycopy(buf, 1, msgBuf, 0, buf.length - 1);
+        String msg = new String(msgBuf, Charset.defaultCharset());
+        Log.d(TAG, "Message received: " + msg);
+        switch (msgType) {
+            case CURRENT_BLACK_CARD: {
+                updateBlackCardView(msg);
+                break;
             }
+            case GET_NEXT_ROUND: {
+                onGetNextRound();
+                break;
+            }
+            default: {
+                throw new AssertionError("Message type not being handled");
+            }
+        }
         }
     };
 
@@ -847,18 +842,18 @@ public class GameActivity extends AppCompatActivity {
         mRealTimeMultiplayerClient.sendReliableMessage(msgBuf, mRoomId, receiver.getParticipantId(), new RealTimeMultiplayerClient.ReliableMessageSentCallback() {
             @Override
             public void onRealTimeMessageSent(int statusCode, int tokenId, String recipientParticipantId) {
-                Log.d(TAG, "RealTime message sent");
-                Log.d(TAG, "  statusCode: " + statusCode);
-                Log.d(TAG, "  tokenId: " + tokenId);
-                Log.d(TAG, "  recipientParticipantId: " + recipientParticipantId);
+            Log.d(TAG, "RealTime message sent");
+            Log.d(TAG, "  statusCode: " + statusCode);
+            Log.d(TAG, "  tokenId: " + tokenId);
+            Log.d(TAG, "  recipientParticipantId: " + recipientParticipantId);
             }
         })
-                .addOnSuccessListener(new OnSuccessListener<Integer>() {
-                    @Override
-                    public void onSuccess(Integer tokenId) {
-                        Log.d(TAG, "Created a reliable message with tokenId: " + tokenId);
-                    }
-                });
+            .addOnSuccessListener(new OnSuccessListener<Integer>() {
+                @Override
+                public void onSuccess(Integer tokenId) {
+                Log.d(TAG, "Created a reliable message with tokenId: " + tokenId);
+                }
+            });
     }
 
     /*
@@ -867,9 +862,9 @@ public class GameActivity extends AppCompatActivity {
 
     // This array lists all the individual screens our game has.
     final static int[] SCREENS = {
-            R.id.screen_game,
-            R.id.screen_sign_in2,
-            R.id.screen_wait
+        R.id.screen_game,
+        R.id.screen_sign_in2,
+        R.id.screen_wait
     };
     int mCurScreen = -1;
 
