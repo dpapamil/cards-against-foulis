@@ -36,7 +36,7 @@ limitations under the License. -->
     <string name="unexpected_status">Unexpected status: %1$s</string>
     <string name="match_error_inactive_match">This match is inactive.</string>
     <string name='match_error_locally_modified'>This match has locally-modified data.  This operation cannot be performed until the match is sent to the server.</string>
-    <string name="empty_not_saved">Word not saved because it is empty.</string>
+    <string name="empty_not_saved">Card not saved because it is empty.</string>
 
     <string name="next_black_card">Next Round</string>
 

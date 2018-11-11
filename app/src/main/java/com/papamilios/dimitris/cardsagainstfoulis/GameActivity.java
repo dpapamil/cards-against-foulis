@@ -1,5 +1,7 @@
 package com.papamilios.dimitris.cardsagainstfoulis;
 
+/*  * Copyright (C) 2018 Cards Against Foulis Co.  */
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.arch.lifecycle.LiveData;
@@ -49,6 +51,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
+/*
+*  The activity to hold the game screen.
+ */
 
 public class GameActivity extends AppCompatActivity {
 

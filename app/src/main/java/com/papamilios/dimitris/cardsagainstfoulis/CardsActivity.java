@@ -1,5 +1,7 @@
 package com.papamilios.dimitris.cardsagainstfoulis;
 
+/*  * Copyright (C) 2018 Cards Against Foulis Co.  */
+
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -16,6 +18,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+
+/*
+*  The activity to interact with either the black or the white cards.
+ */
 
 public class CardsActivity extends AppCompatActivity {
 
@@ -45,7 +51,7 @@ public class CardsActivity extends AppCompatActivity {
         // Get a new or existing ViewModel from the ViewModelProvider.
         mCardViewModel = ViewModelProviders.of(this).get(CardViewModel.class);
 
-        // Add an observer on the LiveData returned by getAlphabetizedWords.
+        // Add an observer on the LiveData containing the cards.
         // The onChanged() method fires when the observed data changes and the activity is
         // in the foreground.
         LiveData<List<Card>> cards = mIsWhite? mCardViewModel.getAllWhiteCards() : mCardViewModel.getAllBlackCards();
