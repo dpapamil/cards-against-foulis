@@ -1,9 +1,20 @@
 package com.papamilios.dimitris.cardsagainstfoulis.controller.messages;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum MessageType {
-    SEND_CARD_MSG(0);
+    START_ROUND(0),
+    CHOOSE_WHITE_CARD(1),
+    CHOOSE_WINNER(2),
+    END_ROUND(3),
+    SEND_CARD(4),
+    ASK_CARD(5);
 
     private final int mValue;
+
+    // Mapping message type to its value
+    private static final Map<Integer, MessageType> mMap = new HashMap<Integer, MessageType>();
 
     private MessageType(int value) {
         mValue = value;
@@ -11,5 +22,19 @@ public enum MessageType {
 
     public int value() {
         return mValue;
+    }
+
+    static
+    {
+        for (MessageType type : MessageType.values()) {
+            // assert for duplicate values
+            mMap.put(type.value(), type);
+        }
+    }
+
+    // Get the type from value
+    public static MessageType from(int value)
+    {
+        return mMap.get(value);
     }
 }
