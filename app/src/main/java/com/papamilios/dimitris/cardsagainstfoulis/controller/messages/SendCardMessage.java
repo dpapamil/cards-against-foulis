@@ -1,7 +1,8 @@
 package com.papamilios.dimitris.cardsagainstfoulis.controller.messages;
 
-
-import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
+/*
+ * Copyright (C) 2018 Cards Against Foulis Co.
+ */
 
 import java.nio.charset.Charset;
 
@@ -28,7 +29,7 @@ public class SendCardMessage extends GameMessage {
     }
 
     @Override
-    public void accept(MessageVisitor visitor) {
+    public void accept(IMessageVisitor visitor) {
         visitor.visit(this);
     }
 }

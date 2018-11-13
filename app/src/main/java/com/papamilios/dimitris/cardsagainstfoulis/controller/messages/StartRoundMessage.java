@@ -1,10 +1,14 @@
 package com.papamilios.dimitris.cardsagainstfoulis.controller.messages;
 
+/*
+ * Copyright (C) 2018 Cards Against Foulis Co.
+ */
+
 import java.nio.charset.Charset;
 
 public class StartRoundMessage extends GameMessage {
 
-    private final static String msgSeparator = "@|@";
+    private final static String msgSeparator = "@-@";
 
     // Member variables
     private String mBlackCardText;
@@ -15,12 +19,12 @@ public class StartRoundMessage extends GameMessage {
         super(buf);
         String msgStr = new String(MessageUtils.getActualMsg(buf), Charset.defaultCharset());
         String [] strArr = msgStr.split(msgSeparator);
-        mBlackCardText = strArr[0];
-        mCzarId = strArr[1];
+        mCzarId = strArr[0];
+        mBlackCardText = strArr[1];
     }
 
     public static StartRoundMessage create(String nextCzarId, String blackCardText) {
-        String msgStr = nextCzarId + msgSeparator + nextCzarId;
+        String msgStr = nextCzarId + msgSeparator + blackCardText;
         byte[] msg = msgStr.getBytes(Charset.defaultCharset());
         // Prepend the message type to the actual message
         byte[] msgBuf = MessageUtils.prependType(MessageType.START_ROUND, msg);
@@ -36,7 +40,7 @@ public class StartRoundMessage extends GameMessage {
     }
 
     @Override
-    public void accept(MessageVisitor visitor) {
+    public void accept(IMessageVisitor visitor) {
         visitor.visit(this);
     }
 }

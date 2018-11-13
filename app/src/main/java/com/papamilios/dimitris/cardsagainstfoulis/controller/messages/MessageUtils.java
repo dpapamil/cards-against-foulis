@@ -1,5 +1,9 @@
 package com.papamilios.dimitris.cardsagainstfoulis.controller.messages;
 
+/*
+ * Copyright (C) 2018 Cards Against Foulis Co.
+ */
+
 class MessageUtils {
 
     // Prepend the given message type to the bare message

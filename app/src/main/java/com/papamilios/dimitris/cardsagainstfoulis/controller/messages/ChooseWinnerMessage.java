@@ -1,5 +1,9 @@
 package com.papamilios.dimitris.cardsagainstfoulis.controller.messages;
 
+/*
+ * Copyright (C) 2018 Cards Against Foulis Co.
+ */
+
 import java.nio.charset.Charset;
 
 public class ChooseWinnerMessage extends GameMessage {
@@ -24,7 +28,7 @@ public class ChooseWinnerMessage extends GameMessage {
     }
 
     @Override
-    public void accept(MessageVisitor visitor) {
+    public void accept(IMessageVisitor visitor) {
         visitor.visit(this);
     }
 }

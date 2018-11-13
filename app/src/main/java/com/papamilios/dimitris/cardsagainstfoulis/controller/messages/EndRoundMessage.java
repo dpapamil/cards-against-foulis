@@ -1,5 +1,9 @@
 package com.papamilios.dimitris.cardsagainstfoulis.controller.messages;
 
+/*
+ * Copyright (C) 2018 Cards Against Foulis Co.
+ */
+
 public class EndRoundMessage extends GameMessage {
 
     public EndRoundMessage(byte[] buf) {
@@ -13,7 +17,7 @@ public class EndRoundMessage extends GameMessage {
     }
 
     @Override
-    public void accept(MessageVisitor visitor) {
+    public void accept(IMessageVisitor visitor) {
         visitor.visit(this);
     }
 }
