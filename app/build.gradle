@@ -40,4 +40,8 @@ dependencies {
     // Google play services
     implementation "com.google.android.gms:play-services-games:$rootProject.gmsLibraryVersion"
     implementation "com.google.android.gms:play-services-auth:$rootProject.gmsLibraryVersion"
+
+    testImplementation 'junit:junit:4.12'
+    // Mockito used for tests
+    testImplementation 'org.mockito:mockito-core:2.7.22'
 }
