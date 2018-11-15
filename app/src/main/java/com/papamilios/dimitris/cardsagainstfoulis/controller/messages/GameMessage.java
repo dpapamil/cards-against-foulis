@@ -4,7 +4,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller.messages;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
-public class GameMessage implements IGameMessage {
+public abstract class GameMessage implements IGameMessage {
 
     // Member variables
     // The actual message
@@ -16,15 +16,16 @@ public class GameMessage implements IGameMessage {
     // The sender of the message
     private String mSenderId;
 
-    // Public Functions
-    public GameMessage(byte[] msgBuf) {
+    protected GameMessage(byte[] msgBuf) {
         mMsgBuf = msgBuf;
     }
 
+    // Public Functions
     public byte[] bytes() {
         return mMsgBuf;
     }
 
+    // Accessors for the receiver
     public void setReceiverId(String receiverId) {
         mReceiverId = receiverId;
     }
@@ -32,7 +33,7 @@ public class GameMessage implements IGameMessage {
         return mReceiverId;
     }
 
-
+    // Accessors for the sender
     public void setSenderId(String senderId) {
         mSenderId = senderId;
     }
@@ -40,8 +41,6 @@ public class GameMessage implements IGameMessage {
         return mSenderId;
     }
 
-    @Override
-    public void accept(IMessageVisitor visitor) {
-        visitor.visit(this);
-    }
+    // Abstract function for accepting a visitor
+    public abstract void accept(IMessageVisitor visitor);
 }

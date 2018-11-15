@@ -1,6 +1,5 @@
 package com.papamilios.dimitris.cardsagainstfoulis;
 
-import com.google.android.gms.games.Game;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.AskCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChooseWhiteCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChooseWinnerMessage;
@@ -55,7 +54,7 @@ public class MessageFactoryTest {
     };
 
     private void testMessage(GameMessage initialMsg) {
-        IGameMessage msg = MessageFactory.create(initialMsg.bytes());
+        GameMessage msg = MessageFactory.create(initialMsg.bytes());
         assertThat(msg, instanceOf(initialMsg.getClass()));
     }
 }

@@ -8,7 +8,6 @@ import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.AskCardMes
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChooseWhiteCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChooseWinnerMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.EndRoundMessage;
-import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.GameMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.IMessageVisitor;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SendCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.StartRoundMessage;
@@ -18,8 +17,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-
-import java.nio.charset.Charset;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
@@ -100,24 +97,6 @@ public class MessageTest {
         String cardText = "Mpoumpounea";
         SendCardMessage msg = SendCardMessage.create(cardText);
         assertEquals(msg.cardText(), cardText);
-
-        // Test Visitor
-        msg.accept(messageVisitor);
-        verify(messageVisitor, times(1)).visit(msg);
-    };
-
-    @Test
-    public void testGameMessage() {
-        // Test the message
-        String msgStr = "filio que";
-        GameMessage msg = new GameMessage(msgStr.getBytes(Charset.defaultCharset()));
-        assertEquals(msg.bytes().length, 9);
-        String receiver = "Foulis";
-        String sender = "Psilos";
-        msg.setReceiverId(receiver);
-        msg.setSenderId(sender);
-        assertEquals(msg.receiverId(), receiver);
-        assertEquals(msg.senderId(), sender);
 
         // Test Visitor
         msg.accept(messageVisitor);

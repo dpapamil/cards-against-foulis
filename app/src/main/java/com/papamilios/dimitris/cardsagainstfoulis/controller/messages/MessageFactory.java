@@ -5,7 +5,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller.messages;
  */
 
 public class MessageFactory {
-    public static IGameMessage create(byte[] msgBuf) {
+    public static GameMessage create(byte[] msgBuf) {
         if (msgBuf.length <= 0) {
             throw new AssertionError("Invalid message");
         }
