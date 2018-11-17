@@ -29,18 +29,39 @@
     <!-- GAMEPLAY SCREEN -->
     <LinearLayout android:id="@+id/screen_game" style="@style/LLScreen">
 
-        <TextView android:id="@+id/countdown" style="@style/FigureLabel" />
-
         <LinearLayout style="@style/ScoresBox">
             <TextView android:id="@+id/cur_black_card" style="@style/ScoreText" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/next_black_card"
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/white_cards"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@android:color/darker_gray"
+            tools:listitem="@layout/recyclerview_item" />
+
+        <LinearLayout
+            android:id="@+id/game_buttons"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/choose_white_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="@string/choose_white_card"
+            android:onClick="onChooseWhiteCard"/>
+
+        <Button
+            android:id="@+id/next_round"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
             android:text="@string/next_black_card"
             android:onClick="onGetNextRound"/>
+        </LinearLayout>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

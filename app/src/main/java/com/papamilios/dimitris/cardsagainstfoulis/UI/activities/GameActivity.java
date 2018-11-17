@@ -6,11 +6,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -42,6 +45,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 import com.papamilios.dimitris.cardsagainstfoulis.database.CardRoomDatabase;
@@ -92,6 +97,11 @@ public class GameActivity extends AppCompatActivity {
     // invitation listener
     String mIncomingInvitationId = null;
 
+    // The white card view model
+    private CardViewModel mCardViewModel = null;
+    private CardListAdapter mCardsAdapter = null;
+    private List<Card> mWhiteCards;
+
     // Message buffer for sending messages
     byte[] mMsgBuf = new byte[2];
 
@@ -100,6 +110,17 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         switchToScreen(R.id.screen_wait);
+
+        RecyclerView recyclerView = findViewById(R.id.white_cards);
+        mCardsAdapter = new CardListAdapter(this);
+        recyclerView.setAdapter(mCardsAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Get a new or existing ViewModel from the ViewModelProvider.
+        mCardViewModel = ViewModelProviders.of(this).get(CardViewModel.class);
+        mWhiteCards = new ArrayList<Card>(10);
+        mCardsAdapter.setCards(mWhiteCards);
+
 
         mController = new GameController(this);
 
@@ -136,6 +157,11 @@ public class GameActivity extends AppCompatActivity {
     // Handler for getting the next black card, ie starting the next round
     public void onGetNextRound(View view) {
         mController.endRound();
+    }
+
+    // Handler for choosing a white card
+    public void onChooseWhiteCard(View view) {
+
     }
 
     // Event handler for clicking the Sign In button
@@ -506,9 +532,16 @@ public class GameActivity extends AppCompatActivity {
         mScore = 0;
     }
 
-    public void updateBlackCardView(String blackCardText) {
+    // Update the black card
+    public void updateBlackCardView(@NonNull String blackCardText) {
         TextView blackCardView = findViewById(R.id.cur_black_card);
         blackCardView.setText(blackCardText);
+    }
+
+    // Add a white card
+    public void addWhiteCard(@NonNull Card whiteCard) {
+        mWhiteCards.add(whiteCard);
+        mCardsAdapter.setCards(mWhiteCards);
     }
 
     /*
@@ -537,6 +570,21 @@ public class GameActivity extends AppCompatActivity {
         } else {
             switchToScreen(R.id.screen_sign_in);
         }
+    }
+
+    // Show the next round button
+    public void showNextRoundButton(boolean value) {
+        findViewById(R.id.next_round).setVisibility(value? View.VISIBLE : View.GONE);
+    }
+
+    // Show the choose white card button
+    public void showChooseCard(boolean value) {
+        findViewById(R.id.choose_white_card).setVisibility(value? View.VISIBLE : View.GONE);
+    }
+
+    // Show the white cards
+    public void showWhiteCards(boolean value) {
+        findViewById(R.id.white_cards).setVisibility(value? View.VISIBLE : View.GONE);
     }
 
     /*

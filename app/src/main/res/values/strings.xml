@@ -39,6 +39,7 @@ limitations under the License. -->
     <string name="empty_not_saved">Card not saved because it is empty.</string>
 
     <string name="next_black_card">Next Round</string>
+    <string name="choose_white_card">Choose Card</string>
 
     <string name="invite_players">Invite friends</string>
     <string name="see_invitations">See invitations</string>

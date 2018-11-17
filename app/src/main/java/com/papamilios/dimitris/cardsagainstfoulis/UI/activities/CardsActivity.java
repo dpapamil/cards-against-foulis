@@ -84,6 +84,7 @@ public class CardsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // Check to see if we have a selected card
+
                 Card selectedCard = adapter.getSelectedCard();
                 if (selectedCard == null) {
                     return;

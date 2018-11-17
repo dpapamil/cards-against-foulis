@@ -51,7 +51,7 @@ public class MessageHandler implements IMessageVisitor {
     };
 
     public void visit(SendCardMessage msg) {
-
+        mGameController.onReceiveCard(msg.cardText());
     };
 
     // Send the Start Round message
@@ -64,6 +64,12 @@ public class MessageHandler implements IMessageVisitor {
     public void sendEndRoundMsg() {
         GameMessage msg = EndRoundMessage.create();
         sendMsg(msg, mGameController.getHost());
+    }
+
+    // Send a white card to the given participant
+    public void sendCardMsg(String cardText, Participant player) {
+        GameMessage msg = SendCardMessage.create(cardText);
+        sendMsg(msg, player);
     }
 
     // Send the given messag to all participants

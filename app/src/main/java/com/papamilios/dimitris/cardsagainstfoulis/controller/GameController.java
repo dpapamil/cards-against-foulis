@@ -67,9 +67,34 @@ public class GameController {
         mRoomProvider.createRoom(invitees);
     }
 
+    // Start the game
     public void startGame() {
+        mGameActivity.showNextRoundButton(false);
+        sendInitialWhiteCards();
         startRound();
     }
+
+    public void sendInitialWhiteCards() {
+        if (!isHost()) {
+            return;
+        }
+        ArrayList<Participant> participants = mRoomProvider.participants();
+        for (Participant p : participants) {
+            if (p.getParticipantId().equals(mRoomProvider.getHostId())) {
+                // For us, the host, we don't need to send messages
+                for (int i = 0; i < 10; i++) {
+                    mGameActivity.addWhiteCard(mCardProvider.getNextWhiteCard());
+                }
+            } else {
+                // Send the white cards as messages
+                for (int i = 0; i < 10; i++) {
+                    mMsgHandler.sendCardMsg(mCardProvider.getNextWhiteCard().getText(), p);
+                }
+            }
+        }
+    }
+
+    // ---------------------- ACTIONS --------------------------------------------
 
     // Start a new round. This will only apply to the host.
     public void startRound() {
@@ -94,6 +119,17 @@ public class GameController {
         }
     }
 
+    // Send the next white card to the given player
+    public void sendCard(Participant player) {
+        if (!isHost()) {
+            return;
+        }
+        Card next_card = mCardProvider.getNextWhiteCard();
+        mMsgHandler.sendCardMsg(next_card.getText(), player);
+    }
+
+    // ---------------------- EVENTS --------------------------------------------
+
     // Handler for when we are about to start a new round
     public void onStartRound(String czarId, String blackCardText) {
         mGameActivity.updateBlackCardView(blackCardText);
@@ -106,6 +142,11 @@ public class GameController {
             return;
         }
         startRound();
+    }
+
+    // Handler for receiving a white card
+    public void onReceiveCard(String cardText) {
+        mGameActivity.addWhiteCard(new Card(0, cardText, true));
     }
 
     public void leaveRoom() {

@@ -64,11 +64,11 @@ limitations under the License. -->
     <style name="LLScreen" parent="@style/GameScreen">
         <item name="android:orientation">vertical</item>
         <item name="android:gravity">center</item>
-        <item name="android:padding">30dp</item>
+        <item name="android:padding">20dp</item>
     </style>
 
     <style name="GameplayScreen" parent="@style/LLScreen">
-        <item name="android:gravity">center</item>
+        <item name="android:gravity">top</item>
     </style>
 
 
@@ -161,8 +161,8 @@ limitations under the License. -->
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">#f0f0f0</item>
         <item name="android:orientation">vertical</item>
-        <item name="android:layout_marginTop">30dp</item>
-        <item name="android:padding">20dp</item>
+        <item name="android:layout_marginTop">5dp</item>
+        <item name="android:padding">10dp</item>
     </style>
 
     <style name="ButtonsBox">
