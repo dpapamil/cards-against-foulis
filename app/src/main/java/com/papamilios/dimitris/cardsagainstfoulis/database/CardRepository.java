@@ -37,20 +37,30 @@ public class CardRepository {
     // Like this, Room ensures that you're not doing any long running operations on the main
     // thread, blocking the UI.
     public void insert(Card card) {
-        new insertAsyncTask(mCardDao).execute(card);
+        new insertAsyncTask(mCardDao, true).execute(card);
+    }
+
+    public void update(Card card) {
+        new insertAsyncTask(mCardDao, false).execute(card);
     }
 
     private static class insertAsyncTask extends AsyncTask<Card, Void, Void> {
 
         private CardDao mAsyncTaskDao;
+        private boolean mInsert;
 
-        insertAsyncTask(CardDao dao) {
+        insertAsyncTask(CardDao dao, boolean insert) {
             mAsyncTaskDao = dao;
+            mInsert = insert;
         }
 
         @Override
         protected Void doInBackground(final Card... params) {
-            mAsyncTaskDao.insert(params[0]);
+            if (mInsert) {
+                mAsyncTaskDao.insert(params[0]);
+            } else {
+                mAsyncTaskDao.update(params[0]);
+            }
             return null;
         }
     }

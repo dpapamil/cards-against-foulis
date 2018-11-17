@@ -31,6 +31,7 @@ import java.util.List;
 public class CardsActivity extends AppCompatActivity {
 
     public static final int NEW_CARD_ACTIVITY_REQUEST_CODE = 1;
+    public static final int EDIT_CARD_ACTIVITY_REQUEST_CODE = 2;
 
     private CardViewModel mCardViewModel;
     private boolean mIsWhite;
@@ -69,12 +70,28 @@ public class CardsActivity extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton add_card = findViewById(R.id.add_card);
+        add_card.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
             Intent intent = new Intent(CardsActivity.this, NewCardActivity.class);
             startActivityForResult(intent, NEW_CARD_ACTIVITY_REQUEST_CODE);
+            }
+        });
+
+        FloatingActionButton edit_card = findViewById(R.id.edit_card);
+        edit_card.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Check to see if we have a selected card
+                Card selectedCard = adapter.getSelectedCard();
+                if (selectedCard == null) {
+                    return;
+                }
+                Intent intent = new Intent(CardsActivity.this, NewCardActivity.class);
+                intent.putExtra(NewCardActivity.CARD_TO_UPDATE, selectedCard.getId());
+                intent.putExtra(NewCardActivity.CARD_TEXT, selectedCard.getText());
+                startActivityForResult(intent, EDIT_CARD_ACTIVITY_REQUEST_CODE);
             }
         });
     }
@@ -83,8 +100,15 @@ public class CardsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == NEW_CARD_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
-            Card card = new Card(0, data.getStringExtra(NewCardActivity.EXTRA_REPLY), mIsWhite);
+            Card card = new Card(0, data.getStringExtra(NewCardActivity.CARD_TEXT), mIsWhite);
             mCardViewModel.insert(card);
+        } else if (requestCode == EDIT_CARD_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
+            Card updated_card = new Card(
+                data.getIntExtra(NewCardActivity.CARD_TO_UPDATE, 0),
+                data.getStringExtra(NewCardActivity.CARD_TEXT),
+                mIsWhite
+            );
+            mCardViewModel.update(updated_card);
         } else {
             Toast.makeText(
                     getApplicationContext(),

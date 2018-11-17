@@ -38,6 +38,10 @@ public class Card {
         return this.mText;
     }
 
+    public void setText(@NonNull String text) {
+        mText = text;
+    }
+
     @NonNull
     public boolean isWhite() {
         return this.mIsWhite;
