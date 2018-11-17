@@ -39,6 +39,7 @@ public class GameController {
     // My Ids
     private String mMyId = null;
     private String mPlayerId;
+    private String mCurCzarId = null;
 
     // The invitation id
     private String mInvitationId = null;
@@ -70,17 +71,19 @@ public class GameController {
     // Start the game
     public void startGame() {
         mGameActivity.showNextRoundButton(false);
+        getNextCzar();
         sendInitialWhiteCards();
         startRound();
     }
 
+    // Initialise the white cards for everyone
     public void sendInitialWhiteCards() {
         if (!isHost()) {
             return;
         }
-        ArrayList<Participant> participants = mRoomProvider.participants();
-        for (Participant p : participants) {
-            if (p.getParticipantId().equals(mRoomProvider.getHostId())) {
+        ArrayList<Participant> plebs = mRoomProvider.getMortalEnemies(mCurCzarId);
+        for (Participant pleb : plebs) {
+            if (pleb.getParticipantId().equals(mRoomProvider.getHostId())) {
                 // For us, the host, we don't need to send messages
                 for (int i = 0; i < 10; i++) {
                     mGameActivity.addWhiteCard(mCardProvider.getNextWhiteCard());
@@ -88,7 +91,7 @@ public class GameController {
             } else {
                 // Send the white cards as messages
                 for (int i = 0; i < 10; i++) {
-                    mMsgHandler.sendCardMsg(mCardProvider.getNextWhiteCard().getText(), p);
+                    sendCard(pleb);
                 }
             }
         }
@@ -104,7 +107,7 @@ public class GameController {
         }
 
         Card blackCard = mCardProvider.getNextBlackCard();
-        onStartRound(mMyId, blackCard.getText());
+        onStartRound(mCurCzarId, blackCard.getText());
         // Send the card to other players
         mMsgHandler.sendStartRoundMsg(mMyId, blackCard.getText());
     }
@@ -133,6 +136,11 @@ public class GameController {
     // Handler for when we are about to start a new round
     public void onStartRound(String czarId, String blackCardText) {
         mGameActivity.updateBlackCardView(blackCardText);
+        mCurCzarId = czarId;
+
+        // Show the white cards and the button only if we aren't a czar
+        mGameActivity.showWhiteCards(!isCzar());
+        mGameActivity.showChooseCard(!isCzar());
     }
 
     // Handle ending this round
@@ -159,6 +167,9 @@ public class GameController {
 
     public boolean isHost() {
         return mRoomProvider.getHostId().equals(mMyId);
+    }
+    public boolean isCzar() {
+        return mCurCzarId.equals(mMyId);
     }
 
     public void onConnected(Player player, RealTimeMultiplayerClient client) {
@@ -200,5 +211,22 @@ public class GameController {
 
     public Participant getHost() {
         return getParticipant(mRoomProvider.getHostId());
+    }
+
+    private void getNextCzar() {
+        List<Participant> participants = mRoomProvider.participants();
+        int curCzarIndex = -1;
+        for (int i = 0; i < participants.size(); i++) {
+            if (participants.get(i).getParticipantId().equals(mCurCzarId)) {
+                curCzarIndex = i;
+                break;
+            }
+        }
+        if (curCzarIndex == participants.size() - 1) {
+            curCzarIndex = 0;
+        } else {
+            curCzarIndex++;
+        }
+        mCurCzarId = participants.get(curCzarIndex).getParticipantId();
     }
 }
