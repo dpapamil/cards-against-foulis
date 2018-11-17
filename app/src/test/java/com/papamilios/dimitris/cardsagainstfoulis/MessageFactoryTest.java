@@ -5,7 +5,6 @@ import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChooseWhit
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChooseWinnerMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.EndRoundMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.GameMessage;
-import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.IGameMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.MessageFactory;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SendCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.StartRoundMessage;

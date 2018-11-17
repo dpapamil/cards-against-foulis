@@ -5,12 +5,10 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  */
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.GameMessage;
-import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.IGameMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.MessageFactory;
 
 import java.nio.charset.Charset;
@@ -31,7 +29,7 @@ public class MessageReceiver implements OnRealTimeMessageReceivedListener {
         byte[] buf = realTimeMessage.getMessageData();
 
         // Create the message and set its sender
-        IGameMessage msg = MessageFactory.create(buf);
+        GameMessage msg = MessageFactory.create(buf);
         msg.setSenderId(realTimeMessage.getSenderParticipantId());
 
         // Handle the message

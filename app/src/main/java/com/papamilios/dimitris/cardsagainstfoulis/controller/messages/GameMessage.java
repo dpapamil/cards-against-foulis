@@ -4,7 +4,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller.messages;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
-public abstract class GameMessage implements IGameMessage {
+public abstract class GameMessage {
 
     // Member variables
     // The actual message

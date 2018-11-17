@@ -30,10 +30,6 @@ public class MessageHandler implements IMessageVisitor {
         mGameController = controller;
     }
 
-    public void visit(GameMessage msg) {
-
-    };
-
     public void visit(StartRoundMessage msg) {
         mGameController.onStartRound(msg.czarId(), msg.blackCardText());
     };
