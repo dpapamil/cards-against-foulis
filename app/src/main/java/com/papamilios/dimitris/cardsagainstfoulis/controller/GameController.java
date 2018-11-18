@@ -4,6 +4,8 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
+import android.support.annotation.NonNull;
+
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Participant;
@@ -13,7 +15,9 @@ import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GameController {
     // Member Variables
@@ -39,7 +43,21 @@ public class GameController {
     // My Ids
     private String mMyId = null;
     private String mPlayerId;
+
+    // The current czar
     private String mCurCzarId = null;
+
+    // The current black card
+    private Card mCurBlackCard = null;
+
+    // The current white cards
+    private List<Card> mWhiteCards;
+
+    // The answers of all plebs
+    private Map<String, String> mPlebsCards;
+
+    // The scoreboard
+    private Map<String, Integer> mScoreboard;
 
     // The invitation id
     private String mInvitationId = null;
@@ -51,6 +69,10 @@ public class GameController {
         mMsgReceiver = new MessageReceiver(mMsgHandler);
         mRoomProvider = new RoomProvider(this);
         mCardProvider = new CardProvider(activity);
+        mWhiteCards = new ArrayList<Card>();
+        mPlebsCards = new HashMap<String, String>();
+        mCurBlackCard = new Card(0, "", false);
+        mScoreboard = new HashMap<String, Integer>();
     }
 
     // Accept the given invitation. This will join the room that corresponds
@@ -71,6 +93,9 @@ public class GameController {
     // Start the game
     public void startGame() {
         mGameActivity.showNextRoundButton(false);
+        for (Participant p : mRoomProvider.participants()) {
+            mScoreboard.put(p.getParticipantId(), 0);
+        }
         getNextCzar();
         sendInitialWhiteCards();
         startRound();
@@ -86,8 +111,9 @@ public class GameController {
             if (pleb.getParticipantId().equals(mRoomProvider.getHostId())) {
                 // For us, the host, we don't need to send messages
                 for (int i = 0; i < 10; i++) {
-                    mGameActivity.addWhiteCard(mCardProvider.getNextWhiteCard());
+                    mWhiteCards.add(mCardProvider.getNextWhiteCard());
                 }
+                updateWhiteCardsView(mWhiteCards);
             } else {
                 // Send the white cards as messages
                 for (int i = 0; i < 10; i++) {
@@ -106,10 +132,10 @@ public class GameController {
             return;
         }
 
-        Card blackCard = mCardProvider.getNextBlackCard();
-        onStartRound(mCurCzarId, blackCard.getText());
+        mCurBlackCard = mCardProvider.getNextBlackCard();
+        onStartRound(mCurCzarId, mCurBlackCard.getText());
         // Send the card to other players
-        mMsgHandler.sendStartRoundMsg(mMyId, blackCard.getText());
+        mMsgHandler.sendStartRoundMsg(mMyId, mCurBlackCard.getText());
     }
 
     // End the given round.
@@ -120,6 +146,39 @@ public class GameController {
             // Send a message to the host to end this round
             mMsgHandler.sendEndRoundMsg();
         }
+    }
+
+    public void chooseCard(Card chosenCard) {
+        if (isCzar()) {
+            chooseWinningCard(chosenCard);
+        } else {
+            chooseWhiteCard(chosenCard);
+        }
+    }
+
+    // Choose the white card that answers the question
+    public void chooseWhiteCard(Card chosenCard) {
+        Card toRemove = null;
+        for (Card card : mWhiteCards) {
+            if (card.getText().equals(chosenCard.getText())) {
+                toRemove = card;
+                break;
+            }
+        }
+        if (toRemove != null) {
+            mWhiteCards.remove(toRemove);
+            updateWhiteCardsView(mWhiteCards);
+        }
+
+        mMsgHandler.sendChooseWhiteCardMsg(chosenCard.getText());
+        onGetChosenCard(chosenCard.getText(), mMyId);
+    }
+
+
+    // Choose the white card that answers the question
+    public void chooseWinningCard(Card chosenCard) {
+        mMsgHandler.sendChooseWinnerMsg(chosenCard.getText());
+        onGetWinningCard(chosenCard.getText());
     }
 
     // Send the next white card to the given player
@@ -135,7 +194,8 @@ public class GameController {
 
     // Handler for when we are about to start a new round
     public void onStartRound(String czarId, String blackCardText) {
-        mGameActivity.updateBlackCardView(blackCardText);
+        mCurBlackCard.setText(blackCardText);
+        updateBlackCardView();
         mCurCzarId = czarId;
 
         // Show the white cards and the button only if we aren't a czar
@@ -154,7 +214,37 @@ public class GameController {
 
     // Handler for receiving a white card
     public void onReceiveCard(String cardText) {
-        mGameActivity.addWhiteCard(new Card(0, cardText, true));
+        mWhiteCards.add(new Card(0, cardText, true));
+        updateWhiteCardsView(mWhiteCards);
+    }
+
+    // Handler for receiving the card a pleb has chosen
+    public void onGetChosenCard(@NonNull String cardText, @NonNull String plebId) {
+        if (mPlebsCards.containsKey(plebId)) {
+            throw new AssertionError("We shouldn't get two answers for this pleb");
+        }
+
+        mPlebsCards.put(plebId, cardText);
+        if (mPlebsCards.size() != mRoomProvider.participants().size() - 1) {
+            // Show the answers, if we received all of them
+            mGameActivity.showWhiteCards(true);
+            showAnswerCards();
+            mGameActivity.showChooseCard(isCzar());
+        }
+    }
+
+    // Handler for receiving the winnong card
+    public void onGetWinningCard(String cardText) {
+        for (Map.Entry<String, String> pair : mPlebsCards.entrySet()) {
+            if (cardText.equals(pair.getValue())) {
+                // This is the winner. Increase his score
+                mScoreboard.put(pair.getKey(), mScoreboard.get(pair.getKey()) + 1);
+                break;
+            }
+        }
+        mGameActivity.selectWhiteCard(cardText);
+        mGameActivity.showChooseCard(false);
+        mGameActivity.showNextRoundButton(true);
     }
 
     public void leaveRoom() {
@@ -211,6 +301,26 @@ public class GameController {
 
     public Participant getHost() {
         return getParticipant(mRoomProvider.getHostId());
+    }
+
+    // Update the current black card
+    public void updateBlackCardView() {
+        mGameActivity.updateBlackCardView(mCurBlackCard.getText());
+    }
+
+    // Update the white cards
+    public void updateWhiteCardsView(List<Card> cards) {
+        mGameActivity.updateWhiteCardsView(cards);
+    }
+
+    // This will show the answer cards
+    public void showAnswerCards() {
+        // All plebs have given their answers. Show their answers
+        List<Card> answerCards = new ArrayList<Card>();
+        for (String cardText : mPlebsCards.values()) {
+            answerCards.add(new Card(0, cardText, true));
+        }
+        updateWhiteCardsView(answerCards);
     }
 
     private void getNextCzar() {

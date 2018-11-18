@@ -51,7 +51,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
     }
 
     public Card getSelectedCard() {
-        if (mSelectedPos > 0 && mSelectedPos <= mCards.size()) {
+        if (mSelectedPos >= 0 && mSelectedPos <= mCards.size()) {
             return mCards.get(mSelectedPos);
         }
 
@@ -61,6 +61,15 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
     @Override
     public int getItemCount() {
         return mCards.size();
+    }
+
+    public void setSelected(String cardText) {
+        for (Card card : mCards) {
+            if (card.getText().equals(cardText)) {
+                onSelectionChanged(card);
+                break;
+            }
+        }
     }
 
     @Override

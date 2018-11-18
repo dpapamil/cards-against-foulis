@@ -8,12 +8,12 @@ import java.nio.charset.Charset;
 
 public class ChooseWinnerMessage extends GameMessage {
     // Member variables
-    private String mWinnerId;
+    private String mCardText;
 
 
     public ChooseWinnerMessage(byte[] buf) {
         super(buf);
-        mWinnerId = new String(MessageUtils.getActualMsg(buf), Charset.defaultCharset());
+        mCardText = new String(MessageUtils.getActualMsg(buf), Charset.defaultCharset());
     }
 
     public static ChooseWinnerMessage create(String cardText) {
@@ -23,8 +23,8 @@ public class ChooseWinnerMessage extends GameMessage {
         return new ChooseWinnerMessage(msgBuf);
     }
 
-    public String winnerId() {
-        return mWinnerId;
+    public String cardText() {
+        return mCardText;
     }
 
     @Override

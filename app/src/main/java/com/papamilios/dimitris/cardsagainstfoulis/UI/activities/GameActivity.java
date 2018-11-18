@@ -100,7 +100,6 @@ public class GameActivity extends AppCompatActivity {
     // The white card view model
     private CardViewModel mCardViewModel = null;
     private CardListAdapter mCardsAdapter = null;
-    private List<Card> mWhiteCards;
 
     // Message buffer for sending messages
     byte[] mMsgBuf = new byte[2];
@@ -118,8 +117,6 @@ public class GameActivity extends AppCompatActivity {
 
         // Get a new or existing ViewModel from the ViewModelProvider.
         mCardViewModel = ViewModelProviders.of(this).get(CardViewModel.class);
-        mWhiteCards = new ArrayList<Card>(10);
-        mCardsAdapter.setCards(mWhiteCards);
 
 
         mController = new GameController(this);
@@ -161,7 +158,11 @@ public class GameActivity extends AppCompatActivity {
 
     // Handler for choosing a white card
     public void onChooseWhiteCard(View view) {
-
+        Card chosenCard = mCardsAdapter.getSelectedCard();
+        if (chosenCard == null) {
+            // TODO: show some kind of error here, or disable button
+        }
+        mController.chooseCard(chosenCard);
     }
 
     // Event handler for clicking the Sign In button
@@ -539,9 +540,8 @@ public class GameActivity extends AppCompatActivity {
     }
 
     // Add a white card
-    public void addWhiteCard(@NonNull Card whiteCard) {
-        mWhiteCards.add(whiteCard);
-        mCardsAdapter.setCards(mWhiteCards);
+    public void updateWhiteCardsView(@NonNull List<Card> whiteCards) {
+        mCardsAdapter.setCards(whiteCards);
     }
 
     /*
@@ -585,6 +585,11 @@ public class GameActivity extends AppCompatActivity {
     // Show the white cards
     public void showWhiteCards(boolean value) {
         findViewById(R.id.white_cards).setVisibility(value? View.VISIBLE : View.GONE);
+    }
+
+    // Set the given card as selected
+    public void selectWhiteCard(@NonNull String cardText) {
+        mCardsAdapter.setSelected(cardText);
     }
 
     /*

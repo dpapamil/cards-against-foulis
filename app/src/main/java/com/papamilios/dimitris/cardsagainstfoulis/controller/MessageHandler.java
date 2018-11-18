@@ -35,11 +35,11 @@ public class MessageHandler implements IMessageVisitor {
     };
 
     public void visit(ChooseWhiteCardMessage msg) {
-
+        mGameController.onGetChosenCard(msg.cardText(), msg.senderId());
     };
 
     public void visit(ChooseWinnerMessage msg) {
-
+        mGameController.onGetWinningCard(msg.cardText());
     };
 
     public void visit(EndRoundMessage msg) {
@@ -70,6 +70,17 @@ public class MessageHandler implements IMessageVisitor {
     public void sendCardMsg(String cardText, Participant player) {
         GameMessage msg = SendCardMessage.create(cardText);
         sendMsg(msg, player);
+    }
+
+    // Send the white card we chose as the answer
+    public void sendChooseWhiteCardMsg(String cardText) {
+        GameMessage msg = ChooseWhiteCardMessage.create(cardText);
+        sendMsgToAll(msg);
+    }
+
+    public void sendChooseWinnerMsg(String cardText) {
+        GameMessage msg = ChooseWinnerMessage.create(cardText);
+        sendMsgToAll(msg);
     }
 
     // Send the given messag to all participants
