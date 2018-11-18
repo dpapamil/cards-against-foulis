@@ -59,6 +59,8 @@ public class GameController {
     // The scoreboard
     private Map<String, Integer> mScoreboard;
 
+    private List<String> mReadyForNextRound = new ArrayList<String>();
+
     // The invitation id
     private String mInvitationId = null;
 
@@ -106,7 +108,7 @@ public class GameController {
         if (!isHost()) {
             return;
         }
-        ArrayList<Participant> plebs = mRoomProvider.getMortalEnemies(mCurCzarId);
+        ArrayList<Participant> plebs = mRoomProvider.participants();
         for (Participant pleb : plebs) {
             if (pleb.getParticipantId().equals(mRoomProvider.getHostId())) {
                 // For us, the host, we don't need to send messages
@@ -135,13 +137,14 @@ public class GameController {
         mCurBlackCard = mCardProvider.getNextBlackCard();
         onStartRound(mCurCzarId, mCurBlackCard.getText());
         // Send the card to other players
-        mMsgHandler.sendStartRoundMsg(mMyId, mCurBlackCard.getText());
+        mMsgHandler.sendStartRoundMsg(mCurCzarId, mCurBlackCard.getText());
     }
 
     // End the given round.
     public void endRound() {
+        mGameActivity.showNextRoundButton(false);
         if (isHost()) {
-            startRound();
+            onEndRound(mMyId);
         } else {
             // Send a message to the host to end this round
             mMsgHandler.sendEndRoundMsg();
@@ -194,22 +197,49 @@ public class GameController {
 
     // Handler for when we are about to start a new round
     public void onStartRound(String czarId, String blackCardText) {
+        // Clear the answers
+        mPlebsCards.clear();
+        // Clear the next round list
+
+        mReadyForNextRound.clear();
         mCurBlackCard.setText(blackCardText);
         updateBlackCardView();
         mCurCzarId = czarId;
 
         // Show the white cards and the button only if we aren't a czar
         mGameActivity.showWhiteCards(!isCzar());
+        mGameActivity.updateWhiteCardsView(mWhiteCards);
         mGameActivity.showChooseCard(!isCzar());
     }
 
     // Handle ending this round
-    public void onEndRound() {
+    public void onEndRound(String senderId) {
         // We'll need to wait for the host to send us all info of the round
         if (!isHost()) {
             return;
         }
-        startRound();
+
+        if (mReadyForNextRound.contains(senderId)) {
+            throw new AssertionError("Can't have multiple end round messages from the same sender");
+        }
+
+        mReadyForNextRound.add(senderId);
+
+        // Check to see if everyone is ready for the next round
+        if (mReadyForNextRound.size() == mRoomProvider.participants().size()) {
+            // Send a new card to all players except the czar
+            for (Participant player : mRoomProvider.getMortalEnemiesOf(mCurCzarId)) {
+                if (player.getParticipantId().equals(mMyId)) {
+                    mWhiteCards.add(mCardProvider.getNextWhiteCard());
+                } else {
+                    sendCard(player);
+                }
+            }
+            // Get the next czar
+            getNextCzar();
+            // Now we should be ready to begin the next round
+            startRound();
+        }
     }
 
     // Handler for receiving a white card
@@ -225,7 +255,7 @@ public class GameController {
         }
 
         mPlebsCards.put(plebId, cardText);
-        if (mPlebsCards.size() != mRoomProvider.participants().size() - 1) {
+        if (mPlebsCards.size() == mRoomProvider.participants().size() - 1) {
             // Show the answers, if we received all of them
             mGameActivity.showWhiteCards(true);
             showAnswerCards();
@@ -295,8 +325,8 @@ public class GameController {
         return mRoomProvider.getParticipant(id);
     }
 
-    public ArrayList<Participant> getMortalEnemies() {
-        return mRoomProvider.getMortalEnemies(mMyId);
+    public List<Participant> getMortalEnemies() {
+        return mRoomProvider.getMortalEnemiesOf(mMyId);
     }
 
     public Participant getHost() {

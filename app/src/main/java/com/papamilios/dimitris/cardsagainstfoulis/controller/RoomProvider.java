@@ -19,6 +19,7 @@ import com.google.android.gms.tasks.Task;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static android.support.constraint.Constraints.TAG;
 
@@ -212,8 +213,8 @@ public class RoomProvider {
     }
 
     // Get all the participants except ourselves
-    public ArrayList<Participant> getMortalEnemies(String myId) {
-        ArrayList<Participant> enemies = mParticipants;
+    public List<Participant> getMortalEnemiesOf(String myId) {
+        ArrayList<Participant> enemies = new ArrayList<Participant>(mParticipants);
         Participant me = null;
         for (Participant p : enemies) {
             if (p.getParticipantId().equals(myId)) {

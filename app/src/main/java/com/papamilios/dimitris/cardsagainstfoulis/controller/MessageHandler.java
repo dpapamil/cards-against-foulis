@@ -20,6 +20,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.StartRound
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MessageHandler implements IMessageVisitor {
 
@@ -43,7 +44,7 @@ public class MessageHandler implements IMessageVisitor {
     };
 
     public void visit(EndRoundMessage msg) {
-        mGameController.onEndRound();
+        mGameController.onEndRound(msg.senderId());
     };
 
     public void visit(AskCardMessage msg) {
@@ -85,7 +86,7 @@ public class MessageHandler implements IMessageVisitor {
 
     // Send the given messag to all participants
     public void sendMsgToAll(GameMessage msg) {
-        ArrayList<Participant> enemies = mGameController.getMortalEnemies();
+        List<Participant> enemies = mGameController.getMortalEnemies();
         for (Participant p : enemies) {
             sendMsg(msg, p);
         }
