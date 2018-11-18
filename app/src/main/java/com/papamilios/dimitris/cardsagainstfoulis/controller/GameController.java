@@ -143,6 +143,7 @@ public class GameController {
     // End the given round.
     public void endRound() {
         mGameActivity.showNextRoundButton(false);
+        mGameActivity.showWaitForOthers(true);
         if (isHost()) {
             onEndRound(mMyId);
         } else {
@@ -169,8 +170,13 @@ public class GameController {
             }
         }
         if (toRemove != null) {
+            mGameActivity.showWhiteCards(false);
             mWhiteCards.remove(toRemove);
             updateWhiteCardsView(mWhiteCards);
+            mGameActivity.enableWhiteCardsSelection(false);
+            mGameActivity.clearWhiteCardsSelection();
+            mGameActivity.showChooseCard(false);
+            mGameActivity.showWaitForOthers(true);
         }
 
         mMsgHandler.sendChooseWhiteCardMsg(chosenCard.getText());
@@ -206,9 +212,14 @@ public class GameController {
         updateBlackCardView();
         mCurCzarId = czarId;
 
+        mGameActivity.showScoreboard(false);
+        mGameActivity.showWaitForOthers(false);
+
         // Show the white cards and the button only if we aren't a czar
-        mGameActivity.showWhiteCards(!isCzar());
+        mGameActivity.clearWhiteCardsSelection();
+        mGameActivity.enableWhiteCardsSelection(true);
         mGameActivity.updateWhiteCardsView(mWhiteCards);
+        mGameActivity.showWhiteCards(!isCzar());
         mGameActivity.showChooseCard(!isCzar());
     }
 
@@ -257,24 +268,31 @@ public class GameController {
         mPlebsCards.put(plebId, cardText);
         if (mPlebsCards.size() == mRoomProvider.participants().size() - 1) {
             // Show the answers, if we received all of them
+            // Enable teh selection only for the czar
+            mGameActivity.enableWhiteCardsSelection(isCzar());
             mGameActivity.showWhiteCards(true);
             showAnswerCards();
             mGameActivity.showChooseCard(isCzar());
+            mGameActivity.showWaitForOthers(false);
         }
     }
 
-    // Handler for receiving the winnong card
+    // Handler for receiving the winning card
     public void onGetWinningCard(String cardText) {
         for (Map.Entry<String, String> pair : mPlebsCards.entrySet()) {
             if (cardText.equals(pair.getValue())) {
                 // This is the winner. Increase his score
                 mScoreboard.put(pair.getKey(), mScoreboard.get(pair.getKey()) + 1);
+                updateScoreboard();
                 break;
             }
         }
+
+        mGameActivity.enableWhiteCardsSelection(false);
         mGameActivity.selectWhiteCard(cardText);
         mGameActivity.showChooseCard(false);
         mGameActivity.showNextRoundButton(true);
+        mGameActivity.showScoreboard(true);
     }
 
     public void leaveRoom() {
@@ -351,6 +369,16 @@ public class GameController {
             answerCards.add(new Card(0, cardText, true));
         }
         updateWhiteCardsView(answerCards);
+    }
+
+    // Update the scoreboard
+    private void updateScoreboard() {
+        // Update the scoreboard before we show it
+        String scores = "";
+        for (Participant player : mRoomProvider.participants()) {
+            scores += player.getDisplayName() + ": " + mScoreboard.get(player.getParticipantId()) + "\n";
+        }
+        mGameActivity.updateScoreboard(scores);
     }
 
     private void getNextCzar() {

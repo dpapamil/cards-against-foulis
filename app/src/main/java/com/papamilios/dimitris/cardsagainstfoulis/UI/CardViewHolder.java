@@ -15,6 +15,7 @@ class CardViewHolder extends RecyclerView.ViewHolder {
     private Card mCard;
     private boolean mSelected = false;
     private OnItemSelectedListener mListener;
+    private boolean mSelectionEnabled = true;
 
     public CardViewHolder(View itemView, OnItemSelectedListener listener) {
         super(itemView);
@@ -24,6 +25,11 @@ class CardViewHolder extends RecyclerView.ViewHolder {
         mCardItemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Don't do anything if we're not allowed to click and select
+                if (!mSelectionEnabled) {
+                    return;
+                }
+
                 setChecked(!mSelected);
                 mListener.onSelectionChanged(mCard);
 
@@ -49,6 +55,11 @@ class CardViewHolder extends RecyclerView.ViewHolder {
         }
         mCardItemView.setChecked(value);
         mSelected = value;
+    }
+
+    // Enable/disable selection by clicking
+    public void enableSelection(boolean enable) {
+        mSelectionEnabled = enable;
     }
 
     // A listener interface to listen to selection events

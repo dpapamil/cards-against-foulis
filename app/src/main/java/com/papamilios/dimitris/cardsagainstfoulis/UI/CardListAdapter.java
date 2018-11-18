@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
     private final LayoutInflater mInflater;
     private List<Card> mCards = Collections.emptyList(); // Cached copy of words
     private int mSelectedPos = -1;
+    private List<CardViewHolder> mViewHolders = new ArrayList<CardViewHolder>();
 
     public CardListAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -35,7 +37,9 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
     @Override
     public CardViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = mInflater.inflate(R.layout.recyclerview_item, parent, false);
-        return new CardViewHolder(itemView, this);
+        CardViewHolder viewHolder = new CardViewHolder(itemView, this);
+        mViewHolders.add(viewHolder);
+        return viewHolder;
     }
 
     @Override
@@ -63,12 +67,27 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
         return mCards.size();
     }
 
+    // Select the card with the given text
     public void setSelected(String cardText) {
         for (Card card : mCards) {
             if (card.getText().equals(cardText)) {
+                mSelectedPos = -1;
                 onSelectionChanged(card);
                 break;
             }
+        }
+    }
+
+    // Clear all selections
+    public void clearSelection() {
+        mSelectedPos = -1;
+        notifyDataSetChanged();
+    }
+
+    // Enable/disable selection by clicking
+    public void enableSelection(boolean enable) {
+        for (CardViewHolder viewHolder : mViewHolders) {
+            viewHolder.enableSelection(enable);
         }
     }
 

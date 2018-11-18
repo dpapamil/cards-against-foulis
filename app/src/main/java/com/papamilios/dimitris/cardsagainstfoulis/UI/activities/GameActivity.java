@@ -559,7 +559,7 @@ public class GameActivity extends AppCompatActivity {
     void switchToScreen(int screenId) {
         // make the requested screen visible; hide all others.
         for (int id : SCREENS) {
-            findViewById(id).setVisibility(screenId == id ? View.VISIBLE : View.GONE);
+            showView(id, screenId == id);
         }
         mCurScreen = screenId;
     }
@@ -573,23 +573,57 @@ public class GameActivity extends AppCompatActivity {
     }
 
     // Show the next round button
-    public void showNextRoundButton(boolean value) {
-        findViewById(R.id.next_round).setVisibility(value? View.VISIBLE : View.GONE);
+    public void showNextRoundButton(boolean show) {
+        showView(R.id.next_round, show);
     }
 
     // Show the choose white card button
-    public void showChooseCard(boolean value) {
-        findViewById(R.id.choose_white_card).setVisibility(value? View.VISIBLE : View.GONE);
+    public void showChooseCard(boolean show) {
+        showView(R.id.choose_white_card, show);
     }
 
     // Show the white cards
-    public void showWhiteCards(boolean value) {
-        findViewById(R.id.white_cards).setVisibility(value? View.VISIBLE : View.GONE);
+    public void showWhiteCards(boolean show) {
+        showView(R.id.white_cards, show);
     }
 
     // Set the given card as selected
     public void selectWhiteCard(@NonNull String cardText) {
         mCardsAdapter.setSelected(cardText);
+    }
+
+    // Update the text of the scoreboard
+    public void updateScoreboard(@NonNull String scoresText) {
+        ((TextView)findViewById(R.id.score_board)).setText(scoresText);
+    }
+
+    // Show the scoreboard
+    public void showScoreboard(boolean show) {
+        showView(R.id.score_board, show);
+    }
+
+    // Enable/disable selecting white cards via clicking
+    public void enableWhiteCardsSelection(boolean enable) {
+        mCardsAdapter.enableSelection(enable);
+    }
+
+    // Clear the cards selection
+    public void clearWhiteCardsSelection() {
+        mCardsAdapter.clearSelection();
+    }
+
+    // Show the wait for others text
+    public void showWaitForOthers(boolean show) {
+        showView(R.id.wait_others, show);
+    }
+
+    // Show/hide the given view
+    public void showView(int viewId, boolean show) {
+        View view = findViewById(viewId);
+        if (view == null) {
+            return;
+        }
+        view.setVisibility(show? View.VISIBLE : View.GONE);
     }
 
     /*

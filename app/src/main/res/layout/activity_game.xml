@@ -29,10 +29,11 @@
     <!-- GAMEPLAY SCREEN -->
     <LinearLayout android:id="@+id/screen_game" style="@style/LLScreen">
 
+        <TextView android:id="@+id/score_board" style="@style/ScoreText" />
+
         <LinearLayout style="@style/ScoresBox">
             <TextView android:id="@+id/cur_black_card" style="@style/ScoreText" />
         </LinearLayout>
-
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/white_cards"
@@ -40,6 +41,12 @@
             android:layout_height="wrap_content"
             android:background="@android:color/darker_gray"
             tools:listitem="@layout/recyclerview_item" />
+
+        <TextView
+            android:id="@+id/wait_others"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/wait_for_others"/>
 
         <LinearLayout
             android:id="@+id/game_buttons"
