@@ -49,6 +49,13 @@
             android:onClick="onShowBlackCards"/>
 
         <Button
+            android:id="@+id/load_cards"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/load_cards"
+            android:onClick="onLoadCards"/>
+
+        <Button
             android:id="@+id/start_game_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

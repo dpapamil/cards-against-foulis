@@ -22,19 +22,25 @@ import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.GamesClient;
 import com.google.android.gms.games.GamesClientStatusCodes;
 import com.google.android.gms.games.InvitationsClient;
-import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Invitation;
 import com.google.android.gms.games.multiplayer.InvitationCallback;
 import com.google.android.gms.games.multiplayer.Multiplayer;
-import com.google.android.gms.games.multiplayer.Participant;
-import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
+import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
+import com.papamilios.dimitris.cardsagainstfoulis.database.CardRepository;
 
-import java.util.ArrayList;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.InputStream;
 
 /*
 *  The main activity of the application.
@@ -47,9 +53,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String INVITATION_ID = "com.papamilios.dimitris.cardsagainstfoulis.INVITATION_ID";
 
     // Request codes for the UIs that we show with startActivityForResult:
-    final static int RC_SELECT_PLAYERS = 10000;
     final static int RC_INVITATION_INBOX = 10001;
-    final static int RC_WAITING_ROOM = 10002;
 
     // Request code used to invoke sign in user interactions.
     private static final int RC_SIGN_IN = 9001;
@@ -57,26 +61,8 @@ public class MainActivity extends AppCompatActivity {
     // Client used to sign in with Google APIs
     private GoogleSignInClient mGoogleSignInClient = null;
 
-    // Client used to interact with the real time multiplayer system.
-    private RealTimeMultiplayerClient mRealTimeMultiplayerClient = null;
-
     // Client used to interact with the Invitation system.
     private InvitationsClient mInvitationsClient = null;
-
-    // Room ID where the currently active game is taking place; null if we're
-    // not playing.
-    String mRoomId = null;
-
-    // Holds the configuration of the current room.
-    RoomConfig mRoomConfig;
-
-    // The participants in the currently active game
-    ArrayList<Participant> mParticipants = null;
-
-    // My participant ID in the currently active game
-    String mMyId = null;
-
-    private String mPlayerId;
 
     // The currently signed in account, used to check the account has changed outside of this activity when resuming.
     GoogleSignInAccount mSignedInAccount = null;
@@ -142,6 +128,31 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, CardsActivity.class);
         intent.putExtra(WHITE_CARDS, "black");
         startActivity(intent);
+    }
+
+    // Event handler for loading the cards from an excel file
+    public void onLoadCards(View view) {
+        InputStream stream = getResources().openRawResource(R.raw.cards);
+        try {
+            CardRepository repo = new CardRepository(getApplication());
+            XSSFWorkbook workbook = new XSSFWorkbook(stream);
+            XSSFSheet sheet = workbook.getSheetAt(0);
+            int rowsCount = sheet.getPhysicalNumberOfRows();
+            FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+            for (int r = 1; r < rowsCount; r++) {
+                Row row = sheet.getRow(r);
+                for (int c = 0; c < 2; c++) {
+                    Cell cell = row.getCell(c);
+                    CellValue cellValue = formulaEvaluator.evaluate(cell);
+                    String cardText = cellValue.getStringValue();
+                    Card card = new Card(0, cardText, c == 1);
+                    repo.insert(card);
+                }
+            }
+        } catch (Exception e) {
+            /* proper exception handling to be here */
+            Log.d(TAG, e.toString());
+        }
     }
 
     // Event handler for clicking the Start Game button
