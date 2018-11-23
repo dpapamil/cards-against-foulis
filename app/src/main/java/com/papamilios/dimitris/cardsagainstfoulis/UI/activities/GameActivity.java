@@ -161,8 +161,9 @@ public class GameActivity extends AppCompatActivity {
         Card chosenCard = mCardsAdapter.getSelectedCard();
         if (chosenCard == null) {
             // TODO: show some kind of error here, or disable button
+        } else {
+            mController.chooseCard(chosenCard);
         }
-        mController.chooseCard(chosenCard);
     }
 
     // Event handler for clicking the Sign In button
