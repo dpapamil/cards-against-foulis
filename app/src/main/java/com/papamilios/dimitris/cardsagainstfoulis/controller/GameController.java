@@ -142,8 +142,7 @@ public class GameController {
 
     // End the given round.
     public void endRound() {
-        mGameActivity.showNextRoundButton(false);
-        mGameActivity.showWaitForOthers(true);
+        showEndRoundScreen();
         if (isHost()) {
             onEndRound(mMyId);
         } else {
@@ -170,13 +169,7 @@ public class GameController {
             }
         }
         if (toRemove != null) {
-            mGameActivity.showWhiteCards(false);
-            mWhiteCards.remove(toRemove);
-            updateWhiteCardsView(mWhiteCards);
-            mGameActivity.enableWhiteCardsSelection(false);
-            mGameActivity.clearWhiteCardsSelection();
-            mGameActivity.showChooseCard(false);
-            mGameActivity.showWaitForOthers(true);
+            showWaitOthersToChooseScreen();
         }
 
         mMsgHandler.sendChooseWhiteCardMsg(chosenCard.getText());
@@ -209,18 +202,9 @@ public class GameController {
 
         mReadyForNextRound.clear();
         mCurBlackCard.setText(blackCardText);
-        updateBlackCardView();
         mCurCzarId = czarId;
 
-        mGameActivity.showScoreboard(false);
-        mGameActivity.showWaitForOthers(false);
-
-        // Show the white cards and the button only if we aren't a czar
-        mGameActivity.clearWhiteCardsSelection();
-        mGameActivity.enableWhiteCardsSelection(true);
-        mGameActivity.updateWhiteCardsView(mWhiteCards);
-        mGameActivity.showWhiteCards(!isCzar());
-        mGameActivity.showChooseCard(!isCzar());
+        showChoosingWhiteCardScreen();
     }
 
     // Handle ending this round
@@ -267,13 +251,7 @@ public class GameController {
 
         mPlebsCards.put(plebId, cardText);
         if (mPlebsCards.size() == mRoomProvider.participants().size() - 1) {
-            // Show the answers, if we received all of them
-            // Enable teh selection only for the czar
-            mGameActivity.enableWhiteCardsSelection(isCzar());
-            mGameActivity.showWhiteCards(true);
-            showAnswerCards();
-            mGameActivity.showChooseCard(isCzar());
-            mGameActivity.showWaitForOthers(false);
+            showCzarChoosingWinnerScreen();
         }
     }
 
@@ -288,11 +266,7 @@ public class GameController {
             }
         }
 
-        mGameActivity.enableWhiteCardsSelection(false);
-        mGameActivity.selectWhiteCard(cardText);
-        mGameActivity.showChooseCard(false);
-        mGameActivity.showNextRoundButton(true);
-        mGameActivity.showScoreboard(true);
+        showWinnerScreen();
     }
 
     public void leaveRoom() {
@@ -313,6 +287,59 @@ public class GameController {
     public void onConnected(Player player, RealTimeMultiplayerClient client) {
         mPlayerId = player.getPlayerId();
         mRealTimeMultiplayerClient = client;
+    }
+
+    private void showChoosingWhiteCardScreen() {
+        updateBlackCardView();
+
+        mGameActivity.showScoreboard(false);
+        mGameActivity.showWaitForOthers(false);
+
+        // Show the white cards and the button only if we aren't a czar
+        mGameActivity.clearWhiteCardsSelection();
+        mGameActivity.enableWhiteCardsSelection(true);
+        mGameActivity.updateWhiteCardsView(mWhiteCards);
+        mGameActivity.showWhiteCards(!isCzar());
+        mGameActivity.showChooseCard(!isCzar());
+    }
+
+    private void showWaitOthersToChooseScreen() {
+        showChoosingWhiteCardScreen();
+        mGameActivity.enableWhiteCardsSelection(false);
+        mGameActivity.showWhiteCards(false);
+        mGameActivity.showChooseCard(false);
+        mGameActivity.showWaitForOthers(true);
+    }
+
+    private void showAllAnswersScreen() {
+        // Show the answers, if we received all of them
+        // Enable teh selection only for the czars
+        showAnswerCards();
+        mGameActivity.showWhiteCards(true);
+        mGameActivity.enableWhiteCardsSelection(isCzar());
+        mGameActivity.showChooseCard(isCzar());
+        mGameActivity.showWaitForOthers(false);
+    }
+
+    private void showCzarScreen() {
+        showChoosingWhiteCardScreen();
+    }
+
+    private void showCzarChoosingWinnerScreen() {
+        showCzarScreen();
+        showAllAnswersScreen();
+    }
+
+    private void showWinnerScreen() {
+        mGameActivity.enableWhiteCardsSelection(false);
+        mGameActivity.showChooseCard(false);
+        mGameActivity.showNextRoundButton(true);
+        mGameActivity.showScoreboard(true);
+    }
+
+    private void showEndRoundScreen() {
+        mGameActivity.showNextRoundButton(false);
+        mGameActivity.showWaitForOthers(true);
     }
 
     public void onRoomCreated(Room room) {
