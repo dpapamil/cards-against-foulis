@@ -40,15 +40,23 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_add_black_24dp" />
+        android:src="@android:drawable/ic_input_add" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/edit_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        android:layout_gravity="bottom|left"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_edit_black_24dp" />
+        android:src="@android:drawable/ic_menu_edit" />
+    
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/delete_cards"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@android:drawable/ic_delete" />
 
 
 

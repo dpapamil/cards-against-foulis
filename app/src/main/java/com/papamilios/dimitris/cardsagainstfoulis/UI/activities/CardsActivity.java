@@ -95,6 +95,14 @@ public class CardsActivity extends AppCompatActivity {
                 startActivityForResult(intent, EDIT_CARD_ACTIVITY_REQUEST_CODE);
             }
         });
+
+        FloatingActionButton delete_cards = findViewById(R.id.delete_cards);
+        delete_cards.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCardViewModel.deleteAll();
+            }
+        });
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

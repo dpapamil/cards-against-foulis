@@ -44,6 +44,11 @@ public class CardRepository {
         new insertAsyncTask(mCardDao, false).execute(card);
     }
 
+    public void deleteAll() {
+        deleteAllAsyncTask deleteTask = new deleteAllAsyncTask(mCardDao);
+        deleteTask.execute();
+    }
+
     private static class insertAsyncTask extends AsyncTask<Card, Void, Void> {
 
         private CardDao mAsyncTaskDao;
@@ -61,6 +66,21 @@ public class CardRepository {
             } else {
                 mAsyncTaskDao.update(params[0]);
             }
+            return null;
+        }
+    }
+
+    private static class deleteAllAsyncTask extends AsyncTask<Void, Void, Void> {
+
+        private CardDao mAsyncTaskDao;
+
+        deleteAllAsyncTask(CardDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Void... params) {
+            mAsyncTaskDao.deleteAll();
             return null;
         }
     }
