@@ -154,6 +154,11 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    // Handler for closing the room event popup
+    public void onCloseRoomEventPopup(View view) {
+        showView(R.id.room_event_popup, false);
+    }
+
     // Event handler for clicking the Sign In button
     public void onSignIn(View view) {
         // start the sign-in flow
@@ -612,6 +617,12 @@ public class GameActivity extends AppCompatActivity {
         showView(R.id.above_card_msg, show);
     }
 
+    // Show the room event popup with the given text
+    public void showRoomEvent(String text) {
+        setTextToView(R.id.room_event_popup_text, text);
+        showView(R.id.room_event_popup, true);
+    }
+
     // Show/hide the given view
     public void showView(int viewId, boolean show) {
         View view = findViewById(viewId);
@@ -628,6 +639,11 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
         view.setText(text);
+    }
+
+    // Get the specified resource string
+    public String getResourceString(int id) {
+        return getResources().getString(id);
     }
 
     /*

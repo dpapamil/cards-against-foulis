@@ -105,7 +105,7 @@ public class RoomProvider {
     }
 
     // Get the room participants
-    public ArrayList<Participant> participants() {
+    public List<Participant> participants() {
         return mParticipants;
     }
 
@@ -183,6 +183,16 @@ public class RoomProvider {
         mRoomId = null;
         mParticipants.clear();
         mGameController.showGameError();
+    }
+
+    // Called when players have left the game
+    public void onPaylersLeft(Room room, List<String> playerIds) {
+        updateRoom(room);
+        List<String> names = new ArrayList<String>();
+        for (String playerId : playerIds) {
+            names.add(getParticipant(playerId).getDisplayName());
+        }
+        mGameController.onPlayersLeft(names);
     }
 
     // Update the room

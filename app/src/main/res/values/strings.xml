@@ -59,5 +59,6 @@ limitations under the License. -->
     <string name="choose_winner">What would Foulis choose?</string>
     <string name="winner_is">... and the winner is: </string>
 
+    <string name="players_left">The following players/assholes left the game: </string>
 
 </resources>

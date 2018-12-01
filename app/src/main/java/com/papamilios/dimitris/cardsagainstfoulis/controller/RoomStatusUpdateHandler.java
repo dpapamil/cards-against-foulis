@@ -64,7 +64,7 @@ public class RoomStatusUpdateHandler extends RoomStatusUpdateCallback {
 
     @Override
     public void onPeerLeft(Room room, @NonNull List<String> peersWhoLeft) {
-        mRoomProvider.updateRoom(room);
+        mRoomProvider.onPaylersLeft(room, peersWhoLeft);
     }
 
     @Override
@@ -84,6 +84,6 @@ public class RoomStatusUpdateHandler extends RoomStatusUpdateCallback {
 
     @Override
     public void onPeersDisconnected(Room room, @NonNull List<String> peers) {
-        mRoomProvider.updateRoom(room);
+        mRoomProvider.onPaylersLeft(room, peers);
     }
 }

@@ -5,6 +5,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  */
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
@@ -108,7 +109,7 @@ public class GameController {
         if (!isHost()) {
             return;
         }
-        ArrayList<Participant> plebs = mRoomProvider.participants();
+        List<Participant> plebs = mRoomProvider.participants();
         for (Participant pleb : plebs) {
             if (pleb.getParticipantId().equals(mRoomProvider.getHostId())) {
                 // For us, the host, we don't need to send messages
@@ -273,6 +274,18 @@ public class GameController {
         }
 
         showWinnerScreen(winnerId);
+    }
+
+    // Called when players have left the game
+    public void onPlayersLeft(List<String> playersNames) {
+        if (playersNames.isEmpty()) {
+            return;
+        }
+        String msg = mGameActivity.getResourceString(R.string.players_left) + "\n";
+        for (String name : playersNames) {
+            msg += TextUtils.join(", ", playersNames);
+        }
+        mGameActivity.showRoomEvent(msg);
     }
 
     public void leaveRoom() {
