@@ -31,6 +31,12 @@
 
         <TextView android:id="@+id/score_board" style="@style/ScoreText" />
 
+        <TextView
+            android:id="@+id/above_card_msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/wait_for_others"/>
+
         <LinearLayout style="@style/ScoresBox">
             <TextView android:id="@+id/cur_black_card" style="@style/ScoreText" />
         </LinearLayout>

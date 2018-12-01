@@ -10,7 +10,7 @@ import com.google.android.gms.games.Player;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.Room;
-import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
+import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
@@ -257,16 +257,22 @@ public class GameController {
 
     // Handler for receiving the winning card
     public void onGetWinningCard(String cardText) {
+        String winnerId = null;
         for (Map.Entry<String, String> pair : mPlebsCards.entrySet()) {
             if (cardText.equals(pair.getValue())) {
                 // This is the winner. Increase his score
+                winnerId = pair.getKey();
                 mScoreboard.put(pair.getKey(), mScoreboard.get(pair.getKey()) + 1);
                 updateScoreboard();
                 break;
             }
         }
 
-        showWinnerScreen();
+        if (winnerId == null) {
+            return;
+        }
+
+        showWinnerScreen(winnerId);
     }
 
     public void leaveRoom() {
@@ -301,6 +307,17 @@ public class GameController {
         mGameActivity.updateWhiteCardsView(mWhiteCards);
         mGameActivity.showWhiteCards(!isCzar());
         mGameActivity.showChooseCard(!isCzar());
+
+        // Show the message above the black card
+        String msg = "";
+        if (isCzar()) {
+            // "wait for plebs" for the czar
+            msg = mGameActivity.getResources().getString(R.string.waiting_for_plebs);
+        } else {
+            // the current czar for plebs
+            msg = mGameActivity.getResources().getString(R.string.current_czar) + mRoomProvider.getParticipant(mCurCzarId).getDisplayName();
+        }
+        mGameActivity.showMsgAboveBlackCard(true, msg);
     }
 
     private void showWaitOthersToChooseScreen() {
@@ -313,12 +330,16 @@ public class GameController {
 
     private void showAllAnswersScreen() {
         // Show the answers, if we received all of them
-        // Enable teh selection only for the czars
+        // Enable the selection only for the czars
         showAnswerCards();
         mGameActivity.showWhiteCards(true);
         mGameActivity.enableWhiteCardsSelection(isCzar());
         mGameActivity.showChooseCard(isCzar());
         mGameActivity.showWaitForOthers(false);
+
+        int strId = isCzar()? R.string.choose_winner : R.string.waiting_for_czar;
+        String msg = mGameActivity.getResources().getString(strId);
+        mGameActivity.showMsgAboveBlackCard(true, msg);
     }
 
     private void showCzarScreen() {
@@ -330,11 +351,14 @@ public class GameController {
         showAllAnswersScreen();
     }
 
-    private void showWinnerScreen() {
+    private void showWinnerScreen(@NonNull String winnerId) {
         mGameActivity.enableWhiteCardsSelection(false);
         mGameActivity.showChooseCard(false);
         mGameActivity.showNextRoundButton(true);
         mGameActivity.showScoreboard(true);
+
+        String msg = mGameActivity.getResources().getString(R.string.winner_is) + mRoomProvider.getParticipant(winnerId).getDisplayName();
+        mGameActivity.showMsgAboveBlackCard(true, msg);
     }
 
     private void showEndRoundScreen() {

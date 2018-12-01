@@ -4,12 +4,9 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,14 +29,7 @@ import com.google.android.gms.games.InvitationsClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
-import com.google.android.gms.games.multiplayer.Multiplayer;
-import com.google.android.gms.games.multiplayer.Participant;
-import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
-import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.Room;
-import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
-import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateCallback;
-import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -49,9 +39,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
-import com.papamilios.dimitris.cardsagainstfoulis.database.CardRoomDatabase;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -618,6 +606,12 @@ public class GameActivity extends AppCompatActivity {
         showView(R.id.wait_others, show);
     }
 
+    // Show the message above the black card
+    public void showMsgAboveBlackCard(boolean show, String text) {
+        setTextToView(R.id.above_card_msg, text);
+        showView(R.id.above_card_msg, show);
+    }
+
     // Show/hide the given view
     public void showView(int viewId, boolean show) {
         View view = findViewById(viewId);
@@ -625,6 +619,15 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
         view.setVisibility(show? View.VISIBLE : View.GONE);
+    }
+
+    // Set the given text to the view of the given id
+    public void setTextToView(int viewId, String text) {
+        TextView view = (TextView) findViewById(viewId);
+        if (view == null) {
+            return;
+        }
+        view.setText(text);
     }
 
     /*
