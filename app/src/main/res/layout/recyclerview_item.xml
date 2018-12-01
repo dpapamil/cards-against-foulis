@@ -12,6 +12,5 @@
         style="@style/card_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="15dp"
         android:background="@android:color/holo_orange_light" />
 </LinearLayout>

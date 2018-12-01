@@ -35,40 +35,49 @@
             <TextView android:id="@+id/cur_black_card" style="@style/ScoreText" />
         </LinearLayout>
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/white_cards"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/darker_gray"
-            tools:listitem="@layout/recyclerview_item" />
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" >
 
-        <TextView
-            android:id="@+id/wait_others"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/wait_for_others"/>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/white_cards"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:layout_alignParentTop="true"
+                android:layout_above="@id/wait_others"
+                tools:listitem="@layout/recyclerview_item" />
 
-        <LinearLayout
-            android:id="@+id/game_buttons"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/choose_white_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:text="@string/choose_white_card"
-            android:onClick="onChooseWhiteCard"/>
+            <TextView
+                android:id="@+id/wait_others"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/game_buttons"
+                android:text="@string/wait_for_others"/>
 
-        <Button
-            android:id="@+id/next_round"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:text="@string/next_black_card"
-            android:onClick="onGetNextRound"/>
-        </LinearLayout>
+            <LinearLayout
+                android:id="@+id/game_buttons"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true">
+                <Button
+                    android:id="@+id/choose_white_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:text="@string/choose_white_card"
+                    android:onClick="onChooseWhiteCard"/>
+
+                <Button
+                    android:id="@+id/next_round"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:text="@string/next_black_card"
+                    android:onClick="onGetNextRound"/>
+            </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
