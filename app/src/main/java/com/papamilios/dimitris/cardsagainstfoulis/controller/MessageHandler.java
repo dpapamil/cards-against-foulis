@@ -10,6 +10,7 @@ import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.AskCardMessage;
+import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChooseWhiteCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChooseWinnerMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.EndRoundMessage;
@@ -48,6 +49,10 @@ public class MessageHandler implements IMessageVisitor {
     };
 
     public void visit(AskCardMessage msg) {
+
+    };
+
+    public void visit(ChatMessage msg) {
 
     };
 
