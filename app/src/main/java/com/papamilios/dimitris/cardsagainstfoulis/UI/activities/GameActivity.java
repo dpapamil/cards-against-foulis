@@ -14,6 +14,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -37,6 +39,7 @@ import com.google.android.gms.tasks.Task;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.OnSwipeTouchListener;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
@@ -92,6 +95,8 @@ public class GameActivity extends AppCompatActivity {
     // Message buffer for sending messages
     byte[] mMsgBuf = new byte[2];
 
+    private boolean mInChat = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,6 +126,108 @@ public class GameActivity extends AppCompatActivity {
         if (invitationId != null) {
             mInvitationId = invitationId;
         }
+
+        // Hide chat
+        showView(R.id.in_app_chat, false);
+
+        OnSwipeTouchListener swipeListener = new OnSwipeTouchListener(getApplicationContext()) {
+            public void onSwipeRight() {
+                hideChat();
+            }
+
+            public void onSwipeLeft() {
+                showChat();
+            }
+        };
+
+        findViewById(R.id.in_app_chat).setOnTouchListener(swipeListener);
+        findViewById(R.id.screen_game).setOnTouchListener(swipeListener);
+    }
+
+    private class MyAnimationListener implements Animation.AnimationListener {
+
+        @Override
+        public void onAnimationStart(Animation animation) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animation animation) {
+
+        }
+
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+
+        }
+    }
+
+    private void showChat() {
+        if (mInChat) {
+            return;
+        }
+
+        mInChat = true;
+        View view = findViewById(R.id.in_app_chat);
+        view.setVisibility(View.VISIBLE);
+        TranslateAnimation animate = new TranslateAnimation(
+            view.getWidth(),
+            0,
+            0,
+            0);
+        animate.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                showView(R.id.screen_game, false);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        view.startAnimation(animate);
+    }
+
+    private void hideChat() {
+        if (!mInChat) {
+            return;
+        }
+
+        mInChat = false;
+        View view = findViewById(R.id.in_app_chat);
+        TranslateAnimation animate = new TranslateAnimation(
+            0,
+            view.getWidth(),
+            0,
+            0);
+        animate.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                showView(R.id.in_app_chat, false);
+                showView(R.id.screen_game, true);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        view.startAnimation(animate);
     }
 
     @Override
