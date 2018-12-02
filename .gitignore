@@ -9,3 +9,5 @@ build/
 .externalNativeBuild
 /app/debug
 /app/release
+*.jks
+*.properties
