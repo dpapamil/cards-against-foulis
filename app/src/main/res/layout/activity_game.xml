@@ -95,4 +95,13 @@
             android:onClick="onCloseRoomEventPopup"/>
     </LinearLayout>
 
+
+    <!-- IN-APP CHAT -->
+    <LinearLayout
+        android:id="@+id/in_app_chat"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent">
+        <include layout="@layout/chat_layout" />
+    </LinearLayout>
+
 </android.support.constraint.ConstraintLayout>
