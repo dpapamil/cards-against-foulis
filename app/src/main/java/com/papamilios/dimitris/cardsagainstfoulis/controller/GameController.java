@@ -275,7 +275,7 @@ public class GameController {
             return;
         }
 
-        showWinnerScreen(winnerId);
+        showWinnerScreen(cardText, winnerId);
     }
 
     // Called when players have left the game
@@ -366,8 +366,9 @@ public class GameController {
         showAllAnswersScreen();
     }
 
-    private void showWinnerScreen(@NonNull String winnerId) {
+    private void showWinnerScreen(@NonNull String cardText, @NonNull String winnerId) {
         mGameActivity.enableWhiteCardsSelection(false);
+        mGameActivity.selectWhiteCard(cardText);
         mGameActivity.showChooseCard(false);
         mGameActivity.showNextRoundButton(true);
         mGameActivity.showScoreboard(true);
