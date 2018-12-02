@@ -170,6 +170,8 @@ public class GameController {
             }
         }
         if (toRemove != null) {
+            mWhiteCards.remove(toRemove);
+            updateWhiteCardsView(mWhiteCards);
             showWaitOthersToChooseScreen();
         }
 
