@@ -4,6 +4,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.games.RealTimeMultiplayerClient;
@@ -53,7 +54,7 @@ public class MessageHandler implements IMessageVisitor {
     };
 
     public void visit(ChatMessage msg) {
-
+        mGameController.onReceiveChatMessage(msg);
     };
 
     public void visit(SendCardMessage msg) {
@@ -87,6 +88,10 @@ public class MessageHandler implements IMessageVisitor {
     public void sendChooseWinnerMsg(String cardText) {
         GameMessage msg = ChooseWinnerMessage.create(cardText);
         sendMsgToAll(msg);
+    }
+
+    public void sendChatMsg(@NonNull ChatMessage chatMsg) {
+        sendMsgToAll(chatMsg);
     }
 
     // Send the given messag to all participants

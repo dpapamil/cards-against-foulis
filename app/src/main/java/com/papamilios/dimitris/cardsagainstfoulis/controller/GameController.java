@@ -13,6 +13,7 @@ import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
+import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
@@ -199,6 +200,14 @@ public class GameController {
         mMsgHandler.sendCardMsg(next_card.getText(), player);
     }
 
+    // Send a chat message to everyone
+    public void sendChatMessage(@NonNull String msg) {
+        ChatMessage chatMsg = ChatMessage.create(msg);
+        chatMsg.setSenderName(mRoomProvider.getParticipant(mMyId).getDisplayName());
+        mMsgHandler.sendChatMsg(chatMsg);
+        onReceiveChatMessage(chatMsg);
+    }
+
     // ---------------------- EVENTS --------------------------------------------
 
     // Handler for when we are about to start a new round
@@ -285,6 +294,14 @@ public class GameController {
         }
 
         showWinnerScreen(cardText, winnerId);
+    }
+
+    // Called when we receive a chat message
+    public void onReceiveChatMessage(@NonNull ChatMessage chatMsg) {
+        if (chatMsg.getSenderName() == null) {
+            chatMsg.setSenderName(mRoomProvider.getParticipant(chatMsg.senderId()).getDisplayName());
+        }
+        mGameActivity.addChatMessage(chatMsg);
     }
 
     // Called when players have left the game

@@ -40,7 +40,9 @@ import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.OnSwipeTouchListener;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.chat.ChatMessageListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
+import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
@@ -92,6 +94,9 @@ public class GameActivity extends AppCompatActivity {
     private CardViewModel mCardViewModel = null;
     private CardListAdapter mCardsAdapter = null;
 
+    // Chat messages
+    private ChatMessageListAdapter mChatMessageAdapter = null;
+
     // Message buffer for sending messages
     byte[] mMsgBuf = new byte[2];
 
@@ -111,6 +116,10 @@ public class GameActivity extends AppCompatActivity {
         // Get a new or existing ViewModel from the ViewModelProvider.
         mCardViewModel = ViewModelProviders.of(this).get(CardViewModel.class);
 
+        RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
+        mChatMessageAdapter = new ChatMessageListAdapter(this);
+        recyclerChatView.setAdapter(mChatMessageAdapter);
+        recyclerChatView.setLayoutManager(new LinearLayoutManager(this));
 
         mController = new GameController(this);
 
@@ -267,11 +276,25 @@ public class GameActivity extends AppCompatActivity {
         showView(R.id.room_event_popup, false);
     }
 
+    // Handler for sending a chat message
+    public void onSendChatMessage(View view) {
+        TextView msgView = (TextView) findViewById(R.id.edittext_chatbox);
+        String msg = msgView.getText().toString();
+        if (msg != null) {
+            msgView.setText("");
+            mController.sendChatMessage(msg);
+        }
+    }
+
     // Event handler for clicking the Sign In button
     public void onSignIn(View view) {
         // start the sign-in flow
         Log.d(TAG, "Sign-in button clicked");
         startSignInIntent();
+    }
+
+    public void addChatMessage(@NonNull ChatMessage chatMsg) {
+        mChatMessageAdapter.addMessage(chatMsg);
     }
 
     // Start a game as a host

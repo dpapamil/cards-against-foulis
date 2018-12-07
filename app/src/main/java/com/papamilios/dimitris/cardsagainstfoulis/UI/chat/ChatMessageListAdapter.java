@@ -11,13 +11,14 @@ import android.view.ViewGroup;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class ChatMessageListAdapter extends RecyclerView.Adapter<ChatMessageViewHolder> {
 
     private final LayoutInflater mInflater;
-    private List<ChatMessage> mMessages = Collections.emptyList(); // Cached copy of messages
+    private List<ChatMessage> mMessages = new ArrayList<ChatMessage>();
 
     public ChatMessageListAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
