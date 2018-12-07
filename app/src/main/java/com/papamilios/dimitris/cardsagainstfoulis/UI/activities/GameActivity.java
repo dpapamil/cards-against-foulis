@@ -216,6 +216,7 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public void onAnimationEnd(Animation animation) {
+                findViewById(R.id.in_app_chat).clearAnimation();
                 showView(R.id.in_app_chat, false);
                 showView(R.id.screen_game, true);
             }
