@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".UI.activities.GameFragment">
+
+    <!-- GAMEPLAY SCREEN -->
+    <LinearLayout android:id="@+id/screen_game" style="@style/LLScreen">
+
+        <TextView android:id="@+id/score_board" style="@style/ScoreText" />
+
+        <TextView
+            android:id="@+id/above_card_msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/wait_for_others"/>
+
+        <LinearLayout style="@style/ScoresBox">
+            <TextView android:id="@+id/cur_black_card" style="@style/ScoreText" />
+        </LinearLayout>
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" >
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/white_cards"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:layout_alignParentTop="true"
+                android:layout_above="@id/wait_others"
+                tools:listitem="@layout/recyclerview_item" />
+
+            <TextView
+                android:id="@+id/wait_others"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/game_buttons"
+                android:text="@string/wait_for_others"/>
+
+            <LinearLayout
+                android:id="@+id/game_buttons"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true">
+                <Button
+                    android:id="@+id/choose_white_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:text="@string/choose_white_card"
+                    android:onClick="onChooseWhiteCard"/>
+
+                <Button
+                    android:id="@+id/next_round"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:text="@string/next_black_card"
+                    android:onClick="onGetNextRound"/>
+            </LinearLayout>
+        </RelativeLayout>
+    </LinearLayout>
+
+    <!-- ROOM EVENT POPUP -->
+    <LinearLayout android:id="@+id/room_event_popup" style="@style/InvPopup">
+        <TextView android:id="@+id/room_event_popup_text" style="@style/InvPopupText" />
+        <Button android:id="@+id/close_popup"
+            style="@style/InvPopupButton"
+            android:text="@android:string/ok"
+            android:onClick="onCloseRoomEventPopup"/>
+    </LinearLayout>
+
+
+</FrameLayout>

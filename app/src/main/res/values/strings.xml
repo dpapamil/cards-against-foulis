@@ -61,4 +61,7 @@ limitations under the License. -->
 
     <string name="players_left">The following players/assholes left the game: </string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

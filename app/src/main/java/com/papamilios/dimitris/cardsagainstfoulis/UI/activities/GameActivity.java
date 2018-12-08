@@ -4,19 +4,19 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
-import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -27,7 +27,6 @@ import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesActivityResultCodes;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.GamesClientStatusCodes;
-import com.google.android.gms.games.InvitationsClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
@@ -37,13 +36,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
-import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
-import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
-import com.papamilios.dimitris.cardsagainstfoulis.UI.OnSwipeTouchListener;
-import com.papamilios.dimitris.cardsagainstfoulis.UI.chat.ChatMessageListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
-import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
-import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +45,7 @@ import java.util.List;
 *  The activity to hold the game screen.
  */
 
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends FragmentActivity {
 
 
     /*
@@ -66,9 +59,6 @@ public class GameActivity extends AppCompatActivity {
     final static int RC_SELECT_PLAYERS = 10000;
     final static int RC_WAITING_ROOM = 10002;
 
-    final private static int CURRENT_BLACK_CARD = 0;
-    final private static int GET_NEXT_ROUND = 1;
-
     // Request code used to invoke sign in user interactions.
     private static final int RC_SIGN_IN = 9001;
 
@@ -78,29 +68,17 @@ public class GameActivity extends AppCompatActivity {
     // Client used to interact with the real time multiplayer system.
     private RealTimeMultiplayerClient mRealTimeMultiplayerClient = null;
 
-    // Client used to interact with the Invitation system.
-    private InvitationsClient mInvitationsClient = null;
+    // The pager for handling switching between the game and chat fragments
+    private ViewPager mPager;
 
+    // The pager adapter, which provides the pages to the view pager widget.
+    private PagerAdapter mPagerAdapter;
+
+    // The game controller
     private GameController mController;
 
     String mInviterId = null;
     String mInvitationId = null;
-
-    // If non-null, this is the id of the invitation we received via the
-    // invitation listener
-    String mIncomingInvitationId = null;
-
-    // The white card view model
-    private CardViewModel mCardViewModel = null;
-    private CardListAdapter mCardsAdapter = null;
-
-    // Chat messages
-    private ChatMessageListAdapter mChatMessageAdapter = null;
-
-    // Message buffer for sending messages
-    byte[] mMsgBuf = new byte[2];
-
-    private boolean mInChat = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,18 +86,10 @@ public class GameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_game);
         switchToScreen(R.id.screen_wait);
 
-        RecyclerView recyclerView = findViewById(R.id.white_cards);
-        mCardsAdapter = new CardListAdapter(this);
-        recyclerView.setAdapter(mCardsAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Get a new or existing ViewModel from the ViewModelProvider.
-        mCardViewModel = ViewModelProviders.of(this).get(CardViewModel.class);
-
-        RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
-        mChatMessageAdapter = new ChatMessageListAdapter(this);
-        recyclerChatView.setAdapter(mChatMessageAdapter);
-        recyclerChatView.setLayoutManager(new LinearLayoutManager(this));
+        // Instantiate a ViewPager and a PagerAdapter.
+        mPager = (ViewPager) findViewById(R.id.game_pager);
+        mPagerAdapter = new GamePagerAdapter(getSupportFragmentManager());
+        mPager.setAdapter(mPagerAdapter);
 
         mController = new GameController(this);
 
@@ -135,109 +105,10 @@ public class GameActivity extends AppCompatActivity {
         if (invitationId != null) {
             mInvitationId = invitationId;
         }
-
-        // Hide chat
-        showView(R.id.in_app_chat, false);
-
-        OnSwipeTouchListener swipeListener = new OnSwipeTouchListener(getApplicationContext()) {
-            public void onSwipeRight() {
-                hideChat();
-            }
-
-            public void onSwipeLeft() {
-                showChat();
-            }
-        };
-
-        findViewById(R.id.in_app_chat).setOnTouchListener(swipeListener);
-        findViewById(R.id.screen_game).setOnTouchListener(swipeListener);
     }
 
-    private class MyAnimationListener implements Animation.AnimationListener {
-
-        @Override
-        public void onAnimationStart(Animation animation) {
-
-        }
-
-        @Override
-        public void onAnimationEnd(Animation animation) {
-
-        }
-
-        @Override
-        public void onAnimationRepeat(Animation animation) {
-
-        }
-    }
-
-    private void showChat() {
-        if (mInChat) {
-            return;
-        }
-
-        mInChat = true;
-        View view = findViewById(R.id.in_app_chat);
-        view.setVisibility(View.VISIBLE);
-        TranslateAnimation animate = new TranslateAnimation(
-            view.getWidth(),
-            0,
-            0,
-            0);
-        animate.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                showView(R.id.screen_game, false);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        animate.setDuration(500);
-        animate.setFillAfter(true);
-        view.startAnimation(animate);
-    }
-
-    private void hideChat() {
-        if (!mInChat) {
-            return;
-        }
-
-        mInChat = false;
-        View view = findViewById(R.id.in_app_chat);
-        TranslateAnimation animate = new TranslateAnimation(
-            0,
-            view.getWidth(),
-            0,
-            0);
-        animate.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                findViewById(R.id.in_app_chat).clearAnimation();
-                showView(R.id.in_app_chat, false);
-                showView(R.id.screen_game, true);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        animate.setDuration(500);
-        animate.setFillAfter(true);
-        view.startAnimation(animate);
+    public GameController controller() {
+        return mController;
     }
 
     @Override
@@ -255,46 +126,11 @@ public class GameActivity extends AppCompatActivity {
         super.onPause();
     }
 
-
-    // Handler for getting the next black card, ie starting the next round
-    public void onGetNextRound(View view) {
-        mController.endRound();
-    }
-
-    // Handler for choosing a white card
-    public void onChooseWhiteCard(View view) {
-        List<Card> chosenCards = mCardsAdapter.getSelectedCards();
-        if (chosenCards.isEmpty()) {
-            // TODO: show some kind of error here, or disable button
-        } else {
-            mController.chooseCards(chosenCards);
-        }
-    }
-
-    // Handler for closing the room event popup
-    public void onCloseRoomEventPopup(View view) {
-        showView(R.id.room_event_popup, false);
-    }
-
-    // Handler for sending a chat message
-    public void onSendChatMessage(View view) {
-        TextView msgView = (TextView) findViewById(R.id.edittext_chatbox);
-        String msg = msgView.getText().toString();
-        if (msg != null) {
-            msgView.setText("");
-            mController.sendChatMessage(msg);
-        }
-    }
-
     // Event handler for clicking the Sign In button
     public void onSignIn(View view) {
         // start the sign-in flow
         Log.d(TAG, "Sign-in button clicked");
         startSignInIntent();
-    }
-
-    public void addChatMessage(@NonNull ChatMessage chatMsg) {
-        mChatMessageAdapter.addMessage(chatMsg);
     }
 
     // Start a game as a host
@@ -319,7 +155,6 @@ public class GameActivity extends AppCompatActivity {
 
         switchToScreen(R.id.screen_wait);
         keepScreenOn();
-        resetGameVars();
     }
 
     /**
@@ -495,7 +330,6 @@ public class GameActivity extends AppCompatActivity {
         Log.d(TAG, "Creating room...");
         switchToScreen(R.id.screen_wait);
         keepScreenOn();
-        resetGameVars();
 
         mController.createGameRoom(invitees);
         Log.d(TAG, "Room created, waiting for it to be ready...");
@@ -516,36 +350,6 @@ public class GameActivity extends AppCompatActivity {
 
         super.onStop();
     }
-
-//    // Handle back key to make sure we cleanly leave a game if we are in the middle of one
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent e) {
-//        if (keyCode == KeyEvent.KEYCODE_BACK && mCurScreen == R.id.screen_game) {
-//            leaveRoom();
-//            return true;
-//        }
-//        return super.onKeyDown(keyCode, e);
-//    }
-//
-//    // Leave the room.
-//    void leaveRoom() {
-//        Log.d(TAG, "Leaving room.");
-//        mSecondsLeft = 0;
-//        stopKeepingScreenOn();
-//        if (mRoomId != null) {
-//            mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId)
-//                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<Void> task) {
-//                            mRoomId = null;
-//                            mRoomConfig = null;
-//                        }
-//                    });
-//            switchToScreen(R.id.screen_wait);
-//        } else {
-//            switchToMainScreen();
-//        }
-//    }
 
     // Show the waiting room UI to track the progress of other players as they enter the
     // room and get connected.
@@ -569,8 +373,6 @@ public class GameActivity extends AppCompatActivity {
      * CALLBACKS SECTION. This section shows how we implement the several games
      * API callbacks.
      */
-
-    private String mPlayerId;
 
     // The currently signed in account, used to check the account has changed outside of this activity when resuming.
     GoogleSignInAccount mSignedInAccount = null;
@@ -624,7 +426,6 @@ public class GameActivity extends AppCompatActivity {
     // Leave the room.
     private void leaveRoom() {
         Log.d(TAG, "Leaving room.");
-        mSecondsLeft = 0;
         stopKeepingScreenOn();
         if (mController.connectedToRoom()) {
             mController.leaveRoom();
@@ -641,32 +442,6 @@ public class GameActivity extends AppCompatActivity {
             .setNeutralButton(android.R.string.ok, null).create();
 
         switchToMainScreen();
-    }
-
-    /*
-     * GAME LOGIC SECTION. Methods that implement the game's rules.
-     */
-
-    // Current state of the game:
-    int mSecondsLeft = -1; // how long until the game ends (seconds)
-    final static int GAME_DURATION = 60; // game duration, seconds.
-    int mScore = 0; // user's current score
-
-    // Reset game variables in preparation for a new game.
-    void resetGameVars() {
-        mSecondsLeft = GAME_DURATION;
-        mScore = 0;
-    }
-
-    // Update the black card
-    public void updateBlackCardView(@NonNull String blackCardText) {
-        TextView blackCardView = findViewById(R.id.cur_black_card);
-        blackCardView.setText(blackCardText);
-    }
-
-    // Add a white card
-    public void updateWhiteCardsView(@NonNull List<Card> whiteCards) {
-        mCardsAdapter.setCards(whiteCards);
     }
 
     /*
@@ -697,64 +472,6 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    // Show the next round button
-    public void showNextRoundButton(boolean show) {
-        showView(R.id.next_round, show);
-    }
-
-    // Show the choose white card button
-    public void showChooseCard(boolean show) {
-        showView(R.id.choose_white_card, show);
-    }
-
-    // Show the white cards
-    public void showWhiteCards(boolean show) {
-        showView(R.id.white_cards, show);
-    }
-
-    // Set the given card as selected
-    public void selectWhiteCard(@NonNull String cardText) {
-        mCardsAdapter.setSelected(cardText);
-    }
-
-    // Update the text of the scoreboard
-    public void updateScoreboard(@NonNull String scoresText) {
-        ((TextView)findViewById(R.id.score_board)).setText(scoresText);
-    }
-
-    // Show the scoreboard
-    public void showScoreboard(boolean show) {
-        showView(R.id.score_board, show);
-    }
-
-    // Enable/disable selecting white cards via clicking
-    public void setWhiteCardsSelection(int numOfAllowed, boolean enable) {
-        mCardsAdapter.setAllowedSelections(numOfAllowed);
-        mCardsAdapter.enableSelection(enable);
-    }
-
-    // Clear the cards selection
-    public void clearWhiteCardsSelection() {
-        mCardsAdapter.clearSelection();
-    }
-
-    // Show the wait for others text
-    public void showWaitForOthers(boolean show) {
-        showView(R.id.wait_others, show);
-    }
-
-    // Show the message above the black card
-    public void showMsgAboveBlackCard(boolean show, String text) {
-        setTextToView(R.id.above_card_msg, text);
-        showView(R.id.above_card_msg, show);
-    }
-
-    // Show the room event popup with the given text
-    public void showRoomEvent(String text) {
-        setTextToView(R.id.room_event_popup_text, text);
-        showView(R.id.room_event_popup, true);
-    }
-
     // Show/hide the given view
     public void showView(int viewId, boolean show) {
         View view = findViewById(viewId);
@@ -762,15 +479,6 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
         view.setVisibility(show? View.VISIBLE : View.GONE);
-    }
-
-    // Set the given text to the view of the given id
-    public void setTextToView(int viewId, String text) {
-        TextView view = (TextView) findViewById(viewId);
-        if (view == null) {
-            return;
-        }
-        view.setText(text);
     }
 
     // Get the specified resource string
@@ -796,4 +504,29 @@ public class GameActivity extends AppCompatActivity {
     void stopKeepingScreenOn() {
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
+
+
+    /**
+     * A simple pager adapter that represents the game and chat screens
+     */
+    private class GamePagerAdapter extends FragmentStatePagerAdapter {
+        List<Fragment> mFragments = new ArrayList<Fragment>(2);
+
+        public GamePagerAdapter(FragmentManager fm) {
+            super(fm);
+            mFragments.add(0, new GameFragment());
+            mFragments.add(1, new ChatFragment());
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return mFragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mFragments.size();
+        }
+    }
+
 }
