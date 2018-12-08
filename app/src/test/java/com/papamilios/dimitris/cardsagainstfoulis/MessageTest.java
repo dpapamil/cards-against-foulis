@@ -62,9 +62,9 @@ public class MessageTest {
     @Test
     public void testChooseWinnerMessage() {
         // Test the message
-        String winnerId = "2";
-        ChooseWinnerMessage msg = ChooseWinnerMessage.create(winnerId);
-        assertEquals(msg.winnerId(), winnerId);
+        String cardText = "Tarzanelia";
+        ChooseWinnerMessage msg = ChooseWinnerMessage.create(cardText);
+        assertEquals(msg.cardText(), cardText);
 
         // Test Visitor
         msg.accept(messageVisitor);
