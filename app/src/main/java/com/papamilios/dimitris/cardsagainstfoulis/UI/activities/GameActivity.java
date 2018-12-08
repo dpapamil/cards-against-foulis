@@ -146,11 +146,11 @@ public class GameActivity extends AppCompatActivity {
 
     // Handler for choosing a white card
     public void onChooseWhiteCard(View view) {
-        Card chosenCard = mCardsAdapter.getSelectedCard();
-        if (chosenCard == null) {
+        List<Card> chosenCards = mCardsAdapter.getSelectedCards();
+        if (chosenCards.isEmpty()) {
             // TODO: show some kind of error here, or disable button
         } else {
-            mController.chooseCard(chosenCard);
+            mController.chooseCards(chosenCards);
         }
     }
 
@@ -597,7 +597,8 @@ public class GameActivity extends AppCompatActivity {
     }
 
     // Enable/disable selecting white cards via clicking
-    public void enableWhiteCardsSelection(boolean enable) {
+    public void setWhiteCardsSelection(int numOfAllowed, boolean enable) {
+        mCardsAdapter.setAllowedSelections(numOfAllowed);
         mCardsAdapter.enableSelection(enable);
     }
 

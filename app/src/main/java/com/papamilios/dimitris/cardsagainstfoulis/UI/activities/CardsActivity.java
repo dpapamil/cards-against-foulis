@@ -67,6 +67,7 @@ public class CardsActivity extends AppCompatActivity {
             public void onChanged(@Nullable final List<Card> cards) {
                 // Update the cached copy of the words in the adapter.
                 adapter.setCards(cards);
+                adapter.setAllowedSelections(1);
             }
         });
 
@@ -85,7 +86,7 @@ public class CardsActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // Check to see if we have a selected card
 
-                Card selectedCard = adapter.getSelectedCard();
+                Card selectedCard = adapter.getSelectedCards().get(0);
                 if (selectedCard == null) {
                     return;
                 }

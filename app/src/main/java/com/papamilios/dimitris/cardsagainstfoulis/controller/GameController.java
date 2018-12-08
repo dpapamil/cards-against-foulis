@@ -152,29 +152,33 @@ public class GameController {
         }
     }
 
-    public void chooseCard(Card chosenCard) {
+    public void chooseCards(List<Card> chosenCards) {
         if (isCzar()) {
-            chooseWinningCard(chosenCard);
+            if (chosenCards.size() != 1) {
+                throw new AssertionError("There should be only one selection");
+            }
+            chooseWinningCard(chosenCards.get(0));
         } else {
-            chooseWhiteCard(chosenCard);
+            chooseWhiteCards(chosenCards);
         }
     }
 
     // Choose the white card that answers the question
-    public void chooseWhiteCard(Card chosenCard) {
-        Card toRemove = null;
-        for (Card card : mWhiteCards) {
-            if (card.getText().equals(chosenCard.getText())) {
-                toRemove = card;
-                break;
-            }
-        }
-        if (toRemove != null) {
-            mWhiteCards.remove(toRemove);
-            updateWhiteCardsView(mWhiteCards);
-            showWaitOthersToChooseScreen();
+    public void chooseWhiteCards(List<Card> chosenCards) {
+        if (chosenCards.size() < getNumOfAnswers()) {
+            return;
+        } else if (chosenCards.size() > getNumOfAnswers()) {
+            throw new AssertionError("More answers selected thant we expect");
         }
 
+        for (Card card : chosenCards) {
+            mWhiteCards.remove(card);
+        }
+
+        updateWhiteCardsView(mWhiteCards);
+        showWaitOthersToChooseScreen();
+
+        Card chosenCard = CardUtils.mergeWhiteCards(chosenCards);
         mMsgHandler.sendChooseWhiteCardMsg(chosenCard.getText());
         onGetChosenCard(chosenCard.getText(), mMyId);
     }
@@ -225,12 +229,17 @@ public class GameController {
 
         // Check to see if everyone is ready for the next round
         if (mReadyForNextRound.size() == mRoomProvider.participants().size()) {
-            // Send a new card to all players except the czar
+            // Send new cards to all players except the czar
+            int numCardsToAdd = getNumOfAnswers();
             for (Participant player : mRoomProvider.getMortalEnemiesOf(mCurCzarId)) {
-                if (player.getParticipantId().equals(mMyId)) {
-                    mWhiteCards.add(mCardProvider.getNextWhiteCard());
-                } else {
-                    sendCard(player);
+                int numCardsToSend = numCardsToAdd;
+                while(numCardsToSend > 0) {
+                    if (player.getParticipantId().equals(mMyId)) {
+                        mWhiteCards.add(mCardProvider.getNextWhiteCard());
+                    } else {
+                        sendCard(player);
+                    }
+                    numCardsToSend--;
                 }
             }
             // Get the next czar
@@ -318,7 +327,7 @@ public class GameController {
 
         // Show the white cards and the button only if we aren't a czar
         mGameActivity.clearWhiteCardsSelection();
-        mGameActivity.enableWhiteCardsSelection(true);
+        mGameActivity.setWhiteCardsSelection(getNumOfAnswers(), true);
         mGameActivity.updateWhiteCardsView(mWhiteCards);
         mGameActivity.showWhiteCards(!isCzar());
         mGameActivity.showChooseCard(!isCzar());
@@ -337,7 +346,7 @@ public class GameController {
 
     private void showWaitOthersToChooseScreen() {
         showChoosingWhiteCardScreen();
-        mGameActivity.enableWhiteCardsSelection(false);
+        mGameActivity.setWhiteCardsSelection(getNumOfAnswers(), false);
         mGameActivity.showWhiteCards(false);
         mGameActivity.showChooseCard(false);
         mGameActivity.showWaitForOthers(true);
@@ -348,7 +357,7 @@ public class GameController {
         // Enable the selection only for the czars
         showAnswerCards();
         mGameActivity.showWhiteCards(true);
-        mGameActivity.enableWhiteCardsSelection(isCzar());
+        mGameActivity.setWhiteCardsSelection(1, isCzar());
         mGameActivity.showChooseCard(isCzar());
         mGameActivity.showWaitForOthers(false);
 
@@ -367,7 +376,7 @@ public class GameController {
     }
 
     private void showWinnerScreen(@NonNull String cardText, @NonNull String winnerId) {
-        mGameActivity.enableWhiteCardsSelection(false);
+        mGameActivity.setWhiteCardsSelection(1, false);
         mGameActivity.selectWhiteCard(cardText);
         mGameActivity.showChooseCard(false);
         mGameActivity.showNextRoundButton(true);
@@ -436,6 +445,16 @@ public class GameController {
             answerCards.add(new Card(0, cardText, true));
         }
         updateWhiteCardsView(answerCards);
+    }
+
+    // Get the number of needed answers for the current black card.
+    // -1 means we have no black card
+    public int getNumOfAnswers() {
+        if (mCurBlackCard == null) {
+            return -1;
+        }
+
+        return CardUtils.numberOfAnswers(mCurBlackCard);
     }
 
     // Update the scoreboard
