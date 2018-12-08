@@ -30,7 +30,7 @@ class CardViewHolder extends RecyclerView.ViewHolder {
                     return;
                 }
 
-                setChecked(!mSelected);
+                //setChecked(!mSelected);
                 mListener.onSelectionChanged(mCard);
 
             }

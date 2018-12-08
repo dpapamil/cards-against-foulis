@@ -5,6 +5,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.ArraySet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,10 @@ import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
 
 /*
 *  The adapter for a list of cards.
@@ -27,8 +31,9 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
 
     private final LayoutInflater mInflater;
     private List<Card> mCards = Collections.emptyList(); // Cached copy of words
-    private int mSelectedPos = -1;
+    private Set<Integer> mSelectedPos = new HashSet<Integer>();
     private List<CardViewHolder> mViewHolders = new ArrayList<CardViewHolder>();
+    private int mNumOfAllowedSelections = 0;
 
     public CardListAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -46,7 +51,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
     public void onBindViewHolder(CardViewHolder holder, int position) {
         Card card = mCards.get(position);
         holder.setCard(card);
-        holder.setChecked(position == mSelectedPos);
+        holder.setChecked(mSelectedPos.contains(position));
     }
 
     public void setCards(List<Card> cards) {
@@ -54,12 +59,15 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
         notifyDataSetChanged();
     }
 
-    public Card getSelectedCard() {
-        if (mSelectedPos >= 0 && mSelectedPos <= mCards.size()) {
-            return mCards.get(mSelectedPos);
-        }
+    public List<Card> getSelectedCards() {
+        List<Card> selectedCards = new ArrayList<Card>();
 
-        return null;
+        for (Integer pos : mSelectedPos) {
+            if (pos >= 0 && pos <= mCards.size()) {
+                selectedCards.add(mCards.get(pos));
+            }
+        }
+        return selectedCards;
     }
 
     @Override
@@ -71,7 +79,6 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
     public void setSelected(String cardText) {
         for (Card card : mCards) {
             if (card.getText().equals(cardText)) {
-                mSelectedPos = -1;
                 onSelectionChanged(card);
                 break;
             }
@@ -80,7 +87,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
 
     // Clear all selections
     public void clearSelection() {
-        mSelectedPos = -1;
+        mSelectedPos.clear();
         notifyDataSetChanged();
     }
 
@@ -91,16 +98,34 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
         }
     }
 
+    // Set the number of allowed selections
+    public void setAllowedSelections(int num) {
+        if (num < 0) {
+            return;
+        }
+        mNumOfAllowedSelections = num;
+        enableSelection(num > 0);
+    }
+
     @Override
     public void onSelectionChanged(Card card) {
         for (int i = 0; i < mCards.size(); i++) {
             if (card.equals(mCards.get(i))) {
-                if (mSelectedPos == i) {
+                if (mSelectedPos.contains(i)) {
                     // Means we are unselecting this selection
-                    mSelectedPos = -1;
+                    mSelectedPos.remove(i);
                 } else {
                     // We have a new selection
-                    mSelectedPos = i;
+                    if (mNumOfAllowedSelections > 1) {
+                        if (mSelectedPos.size() < mNumOfAllowedSelections) {
+                            mSelectedPos.add(i);
+                        }
+                    } else {
+                        // We have single selection, so unselect the current selection
+                        // and select this one
+                        mSelectedPos.clear();
+                        mSelectedPos.add(i);
+                    }
                 }
                 notifyDataSetChanged();
                 break;
