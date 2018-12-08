@@ -77,9 +77,12 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
 
     // Select the card with the given text
     public void setSelected(String cardText) {
-        for (Card card : mCards) {
+        for (int i = 0; i < mCards.size(); i++) {
+            Card card = mCards.get(i);
             if (card.getText().equals(cardText)) {
-                onSelectionChanged(card);
+                if (!mSelectedPos.contains(i)) {
+                    onSelectionChanged(card);
+                }
                 break;
             }
         }
