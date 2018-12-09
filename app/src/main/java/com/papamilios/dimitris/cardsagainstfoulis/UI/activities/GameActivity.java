@@ -151,6 +151,7 @@ public class GameActivity extends AppCompatActivity {
 
         findViewById(R.id.in_app_chat).setOnTouchListener(swipeListener);
         findViewById(R.id.screen_game).setOnTouchListener(swipeListener);
+        findViewById(R.id.reyclerview_message_list).setOnTouchListener(swipeListener);
     }
 
     private class MyAnimationListener implements Animation.AnimationListener {
