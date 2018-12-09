@@ -119,7 +119,9 @@ public class GameActivity extends AppCompatActivity {
         RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
         mChatMessageAdapter = new ChatMessageListAdapter(this);
         recyclerChatView.setAdapter(mChatMessageAdapter);
-        recyclerChatView.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager chatLayoutManager = new LinearLayoutManager(this);
+        chatLayoutManager.setStackFromEnd(true);
+        recyclerChatView.setLayoutManager(chatLayoutManager);
 
         mController = new GameController(this);
 
@@ -305,6 +307,8 @@ public class GameActivity extends AppCompatActivity {
 
     public void addChatMessage(@NonNull ChatMessage chatMsg) {
         mChatMessageAdapter.addMessage(chatMsg);
+        RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
+        recyclerChatView.smoothScrollToPosition(mChatMessageAdapter.getItemCount() - 1);
     }
 
     // Start a game as a host
