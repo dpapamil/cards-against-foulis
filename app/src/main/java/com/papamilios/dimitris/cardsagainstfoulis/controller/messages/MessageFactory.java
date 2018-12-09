@@ -30,6 +30,9 @@ public class MessageFactory {
             case SEND_CARD: {
                 return new SendCardMessage(msgBuf);
             }
+            case CHAT: {
+                return new ChatMessage(msgBuf);
+            }
             default: {
                 throw new AssertionError("Message type isn't being handled");
             }

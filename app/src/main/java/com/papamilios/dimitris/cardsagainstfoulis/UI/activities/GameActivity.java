@@ -14,6 +14,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -37,7 +39,10 @@ import com.google.android.gms.tasks.Task;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.OnSwipeTouchListener;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.chat.ChatMessageListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
+import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
@@ -89,8 +94,13 @@ public class GameActivity extends AppCompatActivity {
     private CardViewModel mCardViewModel = null;
     private CardListAdapter mCardsAdapter = null;
 
+    // Chat messages
+    private ChatMessageListAdapter mChatMessageAdapter = null;
+
     // Message buffer for sending messages
     byte[] mMsgBuf = new byte[2];
+
+    private boolean mInChat = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -106,6 +116,12 @@ public class GameActivity extends AppCompatActivity {
         // Get a new or existing ViewModel from the ViewModelProvider.
         mCardViewModel = ViewModelProviders.of(this).get(CardViewModel.class);
 
+        RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
+        mChatMessageAdapter = new ChatMessageListAdapter(this);
+        recyclerChatView.setAdapter(mChatMessageAdapter);
+        LinearLayoutManager chatLayoutManager = new LinearLayoutManager(this);
+        chatLayoutManager.setStackFromEnd(true);
+        recyclerChatView.setLayoutManager(chatLayoutManager);
 
         mController = new GameController(this);
 
@@ -120,6 +136,119 @@ public class GameActivity extends AppCompatActivity {
         String invitationId = intent.getStringExtra(MainActivity.INVITATION_ID);
         if (invitationId != null) {
             mInvitationId = invitationId;
+        }
+
+        // Hide chat
+        showView(R.id.in_app_chat, false);
+
+        OnSwipeTouchListener swipeListener = new OnSwipeTouchListener(getApplicationContext()) {
+            public void onSwipeRight() {
+                hideChat();
+            }
+
+            public void onSwipeLeft() {
+                showChat();
+            }
+        };
+
+        findViewById(R.id.in_app_chat).setOnTouchListener(swipeListener);
+        findViewById(R.id.screen_game).setOnTouchListener(swipeListener);
+        findViewById(R.id.reyclerview_message_list).setOnTouchListener(swipeListener);
+    }
+
+    private class MyAnimationListener implements Animation.AnimationListener {
+
+        @Override
+        public void onAnimationStart(Animation animation) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animation animation) {
+
+        }
+
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+
+        }
+    }
+
+    private void showChat() {
+        if (mInChat) {
+            return;
+        }
+
+        mInChat = true;
+        View view = findViewById(R.id.in_app_chat);
+        view.setVisibility(View.VISIBLE);
+        TranslateAnimation animate = new TranslateAnimation(
+            view.getWidth(),
+            0,
+            0,
+            0);
+        animate.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                showView(R.id.screen_game, false);
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        view.startAnimation(animate);
+    }
+
+    private void hideChat() {
+        if (!mInChat) {
+            return;
+        }
+
+        mInChat = false;
+        View view = findViewById(R.id.in_app_chat);
+        TranslateAnimation animate = new TranslateAnimation(
+            0,
+            view.getWidth(),
+            0,
+            0);
+        animate.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                findViewById(R.id.in_app_chat).clearAnimation();
+                showView(R.id.in_app_chat, false);
+                showView(R.id.screen_game, true);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        view.startAnimation(animate);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mInChat) {
+            hideChat();
+        } else {
+            super.onBackPressed();
         }
     }
 
@@ -159,11 +288,27 @@ public class GameActivity extends AppCompatActivity {
         showView(R.id.room_event_popup, false);
     }
 
+    // Handler for sending a chat message
+    public void onSendChatMessage(View view) {
+        TextView msgView = (TextView) findViewById(R.id.edittext_chatbox);
+        String msg = msgView.getText().toString();
+        if (msg != null && !msg.isEmpty()) {
+            msgView.setText("");
+            mController.sendChatMessage(msg);
+        }
+    }
+
     // Event handler for clicking the Sign In button
     public void onSignIn(View view) {
         // start the sign-in flow
         Log.d(TAG, "Sign-in button clicked");
         startSignInIntent();
+    }
+
+    public void addChatMessage(@NonNull ChatMessage chatMsg) {
+        mChatMessageAdapter.addMessage(chatMsg);
+        RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
+        recyclerChatView.smoothScrollToPosition(mChatMessageAdapter.getItemCount() - 1);
     }
 
     // Start a game as a host
@@ -622,6 +767,7 @@ public class GameActivity extends AppCompatActivity {
     public void showRoomEvent(String text) {
         setTextToView(R.id.room_event_popup_text, text);
         showView(R.id.room_event_popup, true);
+        showView(R.id.in_app_chat, false);
     }
 
     // Show/hide the given view

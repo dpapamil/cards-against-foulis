@@ -13,7 +13,8 @@ public enum MessageType {
     CHOOSE_WINNER(2),
     END_ROUND(3),
     SEND_CARD(4),
-    ASK_CARD(5);
+    ASK_CARD(5),
+    CHAT(6);
 
     private final int mValue;
 
