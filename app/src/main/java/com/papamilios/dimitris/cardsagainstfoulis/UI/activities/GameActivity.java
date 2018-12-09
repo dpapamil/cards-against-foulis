@@ -187,12 +187,12 @@ public class GameActivity extends AppCompatActivity {
         animate.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-
+                showView(R.id.screen_game, false);
             }
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                showView(R.id.screen_game, false);
+
             }
 
             @Override
