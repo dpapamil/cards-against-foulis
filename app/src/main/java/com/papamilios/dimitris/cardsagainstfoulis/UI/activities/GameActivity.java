@@ -242,6 +242,15 @@ public class GameActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (mInChat) {
+            hideChat();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume()");
