@@ -290,7 +290,7 @@ public class GameActivity extends AppCompatActivity {
     public void onSendChatMessage(View view) {
         TextView msgView = (TextView) findViewById(R.id.edittext_chatbox);
         String msg = msgView.getText().toString();
-        if (msg != null) {
+        if (msg != null && !msg.isEmpty()) {
             msgView.setText("");
             mController.sendChatMessage(msg);
         }
