@@ -763,6 +763,7 @@ public class GameActivity extends AppCompatActivity {
     public void showRoomEvent(String text) {
         setTextToView(R.id.room_event_popup_text, text);
         showView(R.id.room_event_popup, true);
+        showView(R.id.in_app_chat, false);
     }
 
     // Show/hide the given view
