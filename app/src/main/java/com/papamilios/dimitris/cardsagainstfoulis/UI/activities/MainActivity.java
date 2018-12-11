@@ -144,6 +144,9 @@ public class MainActivity extends AppCompatActivity {
                 for (int c = 0; c < 2; c++) {
                     Cell cell = row.getCell(c);
                     CellValue cellValue = formulaEvaluator.evaluate(cell);
+                    if (cellValue == null) {
+                        continue;
+                    }
                     String cardText = cellValue.getStringValue();
                     Card card = new Card(0, cardText, c == 1);
                     repo.insert(card);
