@@ -17,6 +17,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessag
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -461,6 +462,7 @@ public class GameController {
         for (String cardText : mPlebsCards.values()) {
             answerCards.add(new Card(0, cardText, true));
         }
+        Collections.shuffle(answerCards);
         updateWhiteCardsView(answerCards);
     }
 
