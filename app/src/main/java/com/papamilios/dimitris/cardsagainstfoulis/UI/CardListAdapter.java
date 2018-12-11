@@ -31,7 +31,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
 
     private final LayoutInflater mInflater;
     private List<Card> mCards = Collections.emptyList(); // Cached copy of words
-    private Set<Integer> mSelectedPos = new HashSet<Integer>();
+    private List<Integer> mSelectedPos = new ArrayList<Integer>();
     private List<CardViewHolder> mViewHolders = new ArrayList<CardViewHolder>();
     private int mNumOfAllowedSelections = 0;
 
@@ -116,7 +116,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardViewHolder> implem
             if (card.equals(mCards.get(i))) {
                 if (mSelectedPos.contains(i)) {
                     // Means we are unselecting this selection
-                    mSelectedPos.remove(i);
+                    mSelectedPos.remove((Integer)i);
                 } else {
                     // We have a new selection
                     if (mNumOfAllowedSelections > 1) {
