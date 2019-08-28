@@ -54,20 +54,11 @@ import java.util.List;
 
 public class GameActivity extends AppCompatActivity {
 
-
-    /*
-     * API INTEGRATION SECTION. This section contains the code that integrates
-     * the game with the Google Play game services API.
-     */
-
     final static String TAG = "CardsAgainstFoulis";
 
     // Request codes for the UIs that we show with startActivityForResult:
     final static int RC_SELECT_PLAYERS = 10000;
     final static int RC_WAITING_ROOM = 10002;
-
-    final private static int CURRENT_BLACK_CARD = 0;
-    final private static int GET_NEXT_ROUND = 1;
 
     // Request code used to invoke sign in user interactions.
     private static final int RC_SIGN_IN = 9001;
@@ -78,17 +69,10 @@ public class GameActivity extends AppCompatActivity {
     // Client used to interact with the real time multiplayer system.
     private RealTimeMultiplayerClient mRealTimeMultiplayerClient = null;
 
-    // Client used to interact with the Invitation system.
-    private InvitationsClient mInvitationsClient = null;
-
     private GameController mController;
 
     String mInviterId = null;
     String mInvitationId = null;
-
-    // If non-null, this is the id of the invitation we received via the
-    // invitation listener
-    String mIncomingInvitationId = null;
 
     // The white card view model
     private CardViewModel mCardViewModel = null;
@@ -96,10 +80,6 @@ public class GameActivity extends AppCompatActivity {
 
     // Chat messages
     private ChatMessageListAdapter mChatMessageAdapter = null;
-
-    // Message buffer for sending messages
-    byte[] mMsgBuf = new byte[2];
-
     private boolean mInChat = false;
 
     @Override
@@ -154,24 +134,6 @@ public class GameActivity extends AppCompatActivity {
         findViewById(R.id.in_app_chat).setOnTouchListener(swipeListener);
         findViewById(R.id.screen_game).setOnTouchListener(swipeListener);
         findViewById(R.id.reyclerview_message_list).setOnTouchListener(swipeListener);
-    }
-
-    private class MyAnimationListener implements Animation.AnimationListener {
-
-        @Override
-        public void onAnimationStart(Animation animation) {
-
-        }
-
-        @Override
-        public void onAnimationEnd(Animation animation) {
-
-        }
-
-        @Override
-        public void onAnimationRepeat(Animation animation) {
-
-        }
     }
 
     private void showChat() {
@@ -333,7 +295,6 @@ public class GameActivity extends AppCompatActivity {
 
         switchToScreen(R.id.screen_wait);
         keepScreenOn();
-        resetGameVars();
     }
 
     /**
@@ -509,7 +470,6 @@ public class GameActivity extends AppCompatActivity {
         Log.d(TAG, "Creating room...");
         switchToScreen(R.id.screen_wait);
         keepScreenOn();
-        resetGameVars();
 
         mController.createGameRoom(invitees);
         Log.d(TAG, "Room created, waiting for it to be ready...");
@@ -530,36 +490,6 @@ public class GameActivity extends AppCompatActivity {
 
         super.onStop();
     }
-
-//    // Handle back key to make sure we cleanly leave a game if we are in the middle of one
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent e) {
-//        if (keyCode == KeyEvent.KEYCODE_BACK && mCurScreen == R.id.screen_game) {
-//            leaveRoom();
-//            return true;
-//        }
-//        return super.onKeyDown(keyCode, e);
-//    }
-//
-//    // Leave the room.
-//    void leaveRoom() {
-//        Log.d(TAG, "Leaving room.");
-//        mSecondsLeft = 0;
-//        stopKeepingScreenOn();
-//        if (mRoomId != null) {
-//            mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId)
-//                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<Void> task) {
-//                            mRoomId = null;
-//                            mRoomConfig = null;
-//                        }
-//                    });
-//            switchToScreen(R.id.screen_wait);
-//        } else {
-//            switchToMainScreen();
-//        }
-//    }
 
     // Show the waiting room UI to track the progress of other players as they enter the
     // room and get connected.
@@ -638,7 +568,6 @@ public class GameActivity extends AppCompatActivity {
     // Leave the room.
     private void leaveRoom() {
         Log.d(TAG, "Leaving room.");
-        mSecondsLeft = 0;
         stopKeepingScreenOn();
         if (mController.connectedToRoom()) {
             mController.leaveRoom();
@@ -660,17 +589,6 @@ public class GameActivity extends AppCompatActivity {
     /*
      * GAME LOGIC SECTION. Methods that implement the game's rules.
      */
-
-    // Current state of the game:
-    int mSecondsLeft = -1; // how long until the game ends (seconds)
-    final static int GAME_DURATION = 60; // game duration, seconds.
-    int mScore = 0; // user's current score
-
-    // Reset game variables in preparation for a new game.
-    void resetGameVars() {
-        mSecondsLeft = GAME_DURATION;
-        mScore = 0;
-    }
 
     // Update the black card
     public void updateBlackCardView(@NonNull String blackCardText) {
