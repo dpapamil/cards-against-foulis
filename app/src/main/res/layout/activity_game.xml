@@ -29,6 +29,15 @@
     <!-- GAMEPLAY SCREEN -->
     <LinearLayout android:id="@+id/screen_game" style="@style/LLScreen">
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/got_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="@dimen/icon_padding"
+            android:onClick="onShowChat"
+            android:src="@android:drawable/ic_dialog_email"/>
+
         <TextView android:id="@+id/score_board" style="@style/ScoreText" />
 
         <TextView

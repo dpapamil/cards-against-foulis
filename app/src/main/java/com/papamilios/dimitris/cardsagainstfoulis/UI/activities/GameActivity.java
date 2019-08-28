@@ -119,6 +119,7 @@ public class GameActivity extends AppCompatActivity {
         }
 
         // Hide chat
+        findViewById(R.id.got_message).setVisibility(View.INVISIBLE);
         showView(R.id.in_app_chat, false);
 
         OnSwipeTouchListener swipeListener = new OnSwipeTouchListener(getApplicationContext()) {
@@ -136,12 +137,17 @@ public class GameActivity extends AppCompatActivity {
         findViewById(R.id.reyclerview_message_list).setOnTouchListener(swipeListener);
     }
 
+    public void onShowChat(View view) {
+        showChat();
+    }
+
     private void showChat() {
         if (mInChat) {
             return;
         }
 
         mInChat = true;
+        findViewById(R.id.got_message).setVisibility(View.INVISIBLE);
         View view = findViewById(R.id.in_app_chat);
         view.setVisibility(View.VISIBLE);
         TranslateAnimation animate = new TranslateAnimation(
@@ -269,6 +275,7 @@ public class GameActivity extends AppCompatActivity {
 
     public void addChatMessage(@NonNull ChatMessage chatMsg) {
         mChatMessageAdapter.addMessage(chatMsg);
+        findViewById(R.id.got_message).setVisibility(mInChat ? View.INVISIBLE : View.VISIBLE);
         RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
         recyclerChatView.smoothScrollToPosition(mChatMessageAdapter.getItemCount() - 1);
     }
