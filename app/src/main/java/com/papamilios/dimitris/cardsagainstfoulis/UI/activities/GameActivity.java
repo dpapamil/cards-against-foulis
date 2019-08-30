@@ -5,6 +5,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -216,7 +217,16 @@ public class GameActivity extends AppCompatActivity {
         if (mInChat) {
             hideChat();
         } else {
-            super.onBackPressed();
+            new AlertDialog.Builder(GameActivity.this)
+                .setTitle("Really?")
+                .setMessage("Are you sure you want to exit?\nIf you exit, Foulis will clog your toilet...")
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        GameActivity.super.onBackPressed();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
         }
     }
 
