@@ -296,7 +296,7 @@ public class GameActivity extends AppCompatActivity {
         switchToScreen(R.id.screen_wait);
 
         // show list of invitable players
-        mRealTimeMultiplayerClient.getSelectOpponentsIntent(1, 4).addOnSuccessListener(
+        mRealTimeMultiplayerClient.getSelectOpponentsIntent(1, 7).addOnSuccessListener(
             new OnSuccessListener<Intent>() {
                 @Override
                 public void onSuccess(Intent intent) {
