@@ -296,7 +296,7 @@ public class GameActivity extends AppCompatActivity {
         switchToScreen(R.id.screen_wait);
 
         // show list of invitable players
-        mRealTimeMultiplayerClient.getSelectOpponentsIntent(1, 4).addOnSuccessListener(
+        mRealTimeMultiplayerClient.getSelectOpponentsIntent(1, 7).addOnSuccessListener(
             new OnSuccessListener<Intent>() {
                 @Override
                 public void onSuccess(Intent intent) {
@@ -693,9 +693,15 @@ public class GameActivity extends AppCompatActivity {
     }
 
     // Show the message above the black card
-    public void showMsgAboveBlackCard(boolean show, String text) {
+    public void showMsgAboveBlackCard(boolean show, String text, String important) {
         setTextToView(R.id.above_card_msg, text);
         showView(R.id.above_card_msg, show);
+        if (show && !important.isEmpty()) {
+            setTextToView(R.id.above_card_important, important);
+            showView(R.id.above_card_important, true);
+        } else {
+            showView(R.id.above_card_important, false);
+        }
     }
 
     // Show the room event popup with the given text

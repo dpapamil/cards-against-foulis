@@ -352,14 +352,16 @@ public class GameController {
 
         // Show the message above the black card
         String msg = "";
+        String important = "";
         if (isCzar()) {
             // "wait for plebs" for the czar
             msg = mGameActivity.getResources().getString(R.string.waiting_for_plebs);
         } else {
             // the current czar for plebs
-            msg = mGameActivity.getResources().getString(R.string.current_czar) + mRoomProvider.getParticipant(mCurCzarId).getDisplayName();
+            msg = mGameActivity.getResources().getString(R.string.current_czar);
+            important = mRoomProvider.getParticipant(mCurCzarId).getDisplayName();
         }
-        mGameActivity.showMsgAboveBlackCard(true, msg);
+        mGameActivity.showMsgAboveBlackCard(true, msg, important);
     }
 
     private void showWaitOthersToChooseScreen() {
@@ -381,7 +383,7 @@ public class GameController {
 
         int strId = isCzar()? R.string.choose_winner : R.string.waiting_for_czar;
         String msg = mGameActivity.getResources().getString(strId);
-        mGameActivity.showMsgAboveBlackCard(true, msg);
+        mGameActivity.showMsgAboveBlackCard(true, msg, "");
     }
 
     private void showCzarScreen() {
@@ -400,8 +402,8 @@ public class GameController {
         mGameActivity.showNextRoundButton(true);
         mGameActivity.showScoreboard(true);
 
-        String msg = mGameActivity.getResources().getString(R.string.winner_is) + mRoomProvider.getParticipant(winnerId).getDisplayName();
-        mGameActivity.showMsgAboveBlackCard(true, msg);
+        String msg = mGameActivity.getResources().getString(R.string.winner_is);
+        mGameActivity.showMsgAboveBlackCard(true, msg, mRoomProvider.getParticipant(winnerId).getDisplayName());
     }
 
     private void showEndRoundScreen() {

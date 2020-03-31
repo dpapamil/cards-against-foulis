@@ -15,7 +15,7 @@ import android.support.annotation.NonNull;
  * The fact that this has very few comments emphasizes its coolness.
  */
 
-@Database(entities = {Card.class}, version = 2)
+@Database(entities = {Card.class}, version = 2, exportSchema = false)
 public abstract class CardRoomDatabase extends RoomDatabase {
 
     public abstract CardDao cardDao();
