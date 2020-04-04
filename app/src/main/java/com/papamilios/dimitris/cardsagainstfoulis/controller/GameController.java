@@ -52,10 +52,15 @@ public class GameController {
     // The scoreboard
     private Map<String, Integer> mScoreboard;
 
+    // The list of user IDs that are ready for starting the next round
     private List<String> mReadyForNextRound = new ArrayList<String>();
 
     private List<GamePlayer> mPlayers = new ArrayList<GamePlayer>();
+
     private String mHostId = null;
+
+    // The game state
+    private GameState mGameState;
 
 
     public GameController(GameActivity activity) {
@@ -82,9 +87,11 @@ public class GameController {
         mMsgReceiver.startListening(mMyId);
 
         mGameActivity.showNextRoundButton(false);
-        for (GamePlayer p : mPlayers) {
-            mScoreboard.put(p.getId(), 0);
+        for (Participant p : mRoomProvider.participants()) {
+            mScoreboard.put(p.getParticipantId(), 0);
         }
+        mGameState.initialiseScoreboard(userNames);
+
         getNextCzar();
         sendInitialWhiteCards();
         startRound();
@@ -102,7 +109,8 @@ public class GameController {
                 for (int i = 0; i < 10; i++) {
                     mWhiteCards.add(mCardProvider.getNextWhiteCard());
                 }
-                updateWhiteCardsView(mWhiteCards);
+                //updateWhiteCardsView(mWhiteCards);
+                mGameState.setDisplayedCards(mWhiteCards);
             } else {
                 // Send the white cards as messages
                 for (int i = 0; i < 10; i++) {
@@ -205,7 +213,12 @@ public class GameController {
         mCurBlackCard.setText(blackCardText);
         mCurCzarId = czarId;
 
+        mGameState.setBlackCard(mCurBlackCard);
+        mGameState.setCzarName(getParticipant(mCurCzarId).getDisplayName());
+
         showChoosingWhiteCardScreen();
+
+        mGameActivity.update(mGameState);
     }
 
     // Handle ending this round
@@ -309,38 +322,19 @@ public class GameController {
     }
 
     private void showChoosingWhiteCardScreen() {
-        updateBlackCardView();
-
-        mGameActivity.showScoreboard(false);
-        mGameActivity.showWaitForOthers(false);
-
-        // Show the white cards and the button only if we aren't a czar
-        mGameActivity.clearWhiteCardsSelection();
-        mGameActivity.setWhiteCardsSelection(getNumOfAnswers(), true);
-        mGameActivity.updateWhiteCardsView(mWhiteCards);
-        mGameActivity.showWhiteCards(!isCzar());
-        mGameActivity.showChooseCard(!isCzar());
-
-        // Show the message above the black card
-        String msg = "";
-        String important = "";
-        if (isCzar()) {
-            // "wait for plebs" for the czar
-            msg = mGameActivity.getResources().getString(R.string.waiting_for_plebs);
-        } else {
-            // the current czar for plebs
-            msg = mGameActivity.getResources().getString(R.string.current_czar);
-            important = getPlayer(mCurCzarId).getName();
-        }
-        mGameActivity.showMsgAboveBlackCard(true, msg, important);
+        mGameState.setRoundPhase(RoundPhase.CHOOSING_WHITE_CARD);
+        mGameState.setWaitingForOthers(false);
+        mGameState.clearCardSelection();
+        mGameState.setIsCzar(isCzar());
+        mGameState.setmNumMaxSelections(getNumOfAnswers());
     }
 
     private void showWaitOthersToChooseScreen() {
         showChoosingWhiteCardScreen();
-        mGameActivity.setWhiteCardsSelection(getNumOfAnswers(), false);
-        mGameActivity.showWhiteCards(false);
-        mGameActivity.showChooseCard(false);
-        mGameActivity.showWaitForOthers(true);
+
+        mGameState.setWaitingForOthers(true);
+
+        mGameActivity.update(mGameState);
     }
 
     private void showAllAnswersScreen() {
@@ -474,6 +468,9 @@ public class GameController {
         } else {
             curCzarIndex++;
         }
-        mCurCzarId = mPlayers.get(curCzarIndex).getId();
+        
+        GamePlayer czar = mPlayers.get(curCzarIndex);
+        mCurCzarId = czar.getId();
+        mGameState.setCzarName(czar.getName());
     }
 }
