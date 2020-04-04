@@ -4,8 +4,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
-import android.support.annotation.NonNull;
-import android.util.Log;
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Participant;
@@ -20,8 +19,6 @@ import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.IMessageVi
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SendCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.StartRoundMessage;
 
-import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MessageHandler implements IMessageVisitor {

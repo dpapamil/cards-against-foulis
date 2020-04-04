@@ -3,8 +3,8 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI;
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
 import android.app.Application;
-import android.arch.lifecycle.AndroidViewModel;
-import android.arch.lifecycle.LiveData;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 import com.papamilios.dimitris.cardsagainstfoulis.database.CardRepository;

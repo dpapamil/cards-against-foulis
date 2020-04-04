@@ -3,7 +3,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI;
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
 import android.graphics.Color;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.CheckedTextView;
 

@@ -4,27 +4,23 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
-import android.app.Activity;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.games.GamesCallbackStatusCodes;
-import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.papamilios.dimitris.cardsagainstfoulis.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.support.constraint.Constraints.TAG;
-
 public class RoomProvider {
 
+    final static String TAG = "CardsAgainstFoulis";
     // Member Variables
     // The game controller
     private GameController mGameController;

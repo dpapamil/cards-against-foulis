@@ -18,4 +18,5 @@ limitations under the License. -->
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="buttonLabel">#d3d3d3</color>
+    <color name="scoreboxBackground">#f0f0f0</color>
 </resources>

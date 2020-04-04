@@ -3,15 +3,9 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -28,7 +22,6 @@ import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesActivityResultCodes;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.GamesClientStatusCodes;
-import com.google.android.gms.games.InvitationsClient;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
@@ -37,6 +30,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.PlayGamesAuthProvider;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
@@ -48,6 +46,13 @@ import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 /*
 *  The activity to hold the game screen.
@@ -66,6 +71,9 @@ public class GameActivity extends AppCompatActivity {
 
     // Client used to sign in with Google APIs
     private GoogleSignInClient mGoogleSignInClient = null;
+
+    // The Firebase authentication object
+    private FirebaseAuth mFirebaseAuth = null;
 
     // Client used to interact with the real time multiplayer system.
     private RealTimeMultiplayerClient mRealTimeMultiplayerClient = null;
@@ -107,7 +115,10 @@ public class GameActivity extends AppCompatActivity {
         mController = new GameController(this);
 
         // Create the client used to sign in.
-        mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
+            .requestServerAuthCode(getString(R.string.default_web_client_id))
+            .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         // Sign in silently
         signInSilently();
@@ -471,7 +482,7 @@ public class GameActivity extends AppCompatActivity {
     // "Invite friends" button. We react by creating a room with those players.
 
     private void handleSelectPlayersResult(int response, Intent data) {
-        if (response != Activity.RESULT_OK) {
+        if (response != AppCompatActivity.RESULT_OK) {
             Log.w(TAG, "*** select players UI cancelled, " + response);
             switchToMainScreen();
             return;
@@ -541,6 +552,30 @@ public class GameActivity extends AppCompatActivity {
         if (mSignedInAccount != googleSignInAccount) {
 
             mSignedInAccount = googleSignInAccount;
+
+
+            // Call this both in the silent sign-in task's OnCompleteListener and in the
+            // Activity's onActivityResult handler.
+            Log.d(TAG, "firebaseAuthWithPlayGames:" + googleSignInAccount.getId());
+
+            mFirebaseAuth = FirebaseAuth.getInstance();
+            AuthCredential credential = PlayGamesAuthProvider.getCredential(googleSignInAccount.getServerAuthCode());
+            mFirebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mFirebaseAuth.getCurrentUser();
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                        }
+                    }
+                });
+
+
 
             // update the clients
             mRealTimeMultiplayerClient = Games.getRealTimeMultiplayerClient(this, googleSignInAccount);

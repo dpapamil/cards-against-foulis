@@ -4,7 +4,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.google.android.gms.games.Player;

@@ -3,7 +3,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.database;
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
 import android.app.Application;
-import android.arch.lifecycle.LiveData;
+import androidx.lifecycle.LiveData;
 import android.os.AsyncTask;
 
 import java.util.List;

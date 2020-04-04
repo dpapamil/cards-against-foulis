@@ -4,15 +4,10 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
-import android.support.annotation.NonNull;
-import android.util.Log;
+import androidx.annotation.NonNull;
 
-import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
-import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
-
-import java.util.List;
 
 public class RoomUpdateHandler extends RoomUpdateCallback{
 

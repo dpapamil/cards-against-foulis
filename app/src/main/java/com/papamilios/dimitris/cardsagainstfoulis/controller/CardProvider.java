@@ -4,9 +4,9 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
-import android.arch.lifecycle.Observer;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 import com.papamilios.dimitris.cardsagainstfoulis.database.CardRoomDatabase;

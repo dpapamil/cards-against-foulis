@@ -2,12 +2,8 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -29,6 +25,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.PlayGamesAuthProvider;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 import com.papamilios.dimitris.cardsagainstfoulis.database.CardRepository;
@@ -41,6 +42,10 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.InputStream;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 /*
 *  The main activity of the application.
@@ -67,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
     // The currently signed in account, used to check the account has changed outside of this activity when resuming.
     GoogleSignInAccount mSignedInAccount = null;
 
+    // The Firebase authentication object
+    private FirebaseAuth mFirebaseAuth = null;
+
     // If non-null, this is the invitation we received via the invitation listener
     Invitation mIncomingInvitation = null;
 
@@ -84,7 +92,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Create the client used to sign in.
-        mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
+            .requestServerAuthCode(getString(R.string.default_web_client_id))
+            .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         //signInSilently();
         switchToMainScreen();
     }
@@ -342,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
     // Handle the result of the invitation inbox UI, where the player can pick an invitation
     // to accept. We react by accepting the selected invitation, if any.
     private void handleInvitationInboxResult(int response, Intent data) {
-        if (response != Activity.RESULT_OK) {
+        if (response != AppCompatActivity.RESULT_OK) {
             Log.w(TAG, "*** invitation inbox UI cancelled, " + response);
             switchToMainScreen();
             return;
@@ -390,6 +401,28 @@ public class MainActivity extends AppCompatActivity {
             // update the invitation client
             mInvitationsClient = Games.getInvitationsClient(MainActivity.this, googleSignInAccount);
         }
+
+        // Call this both in the silent sign-in task's OnCompleteListener and in the
+        // Activity's onActivityResult handler.
+        Log.d(TAG, "firebaseAuthWithPlayGames:" + googleSignInAccount.getId());
+
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        AuthCredential credential = PlayGamesAuthProvider.getCredential(googleSignInAccount.getServerAuthCode());
+        mFirebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d(TAG, "signInWithCredential:success");
+                        FirebaseUser user = mFirebaseAuth.getCurrentUser();
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w(TAG, "signInWithCredential:failure", task.getException());
+                    }
+                }
+            });
+
 
         // register listener so we are notified if we receive an invitation to play
         // while we are in the game

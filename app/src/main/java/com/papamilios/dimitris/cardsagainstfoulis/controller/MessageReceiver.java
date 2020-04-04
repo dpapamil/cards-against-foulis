@@ -4,14 +4,12 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.GameMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.MessageFactory;
-
-import java.nio.charset.Charset;
 
 public class MessageReceiver implements OnRealTimeMessageReceivedListener {
 
