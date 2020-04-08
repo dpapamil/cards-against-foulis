@@ -21,6 +21,48 @@
             android:onClick="onSignIn"/>
     </LinearLayout>
 
+    <!-- "CREATE GAME" SCREEN -->
+    <LinearLayout android:id="@+id/screen_create_game" style="@style/LLScreen">
+
+        <TextView style="@style/Blurb" android:text="@string/created_game" />
+        <EditText
+            android:id="@+id/game_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView style="@style/Blurb" android:text="@string/waiting_players_join" />
+        <TextView style="@style/Blurb" android:text="@string/joined_players" />
+        <TextView android:id="@+id/joined_players" style="@style/ScoreText" />
+
+        <Button
+            android:id="@+id/start_game_btn2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_game"
+            android:onClick="onStartGame"/>
+    </LinearLayout>
+
+    <!-- "JOIN GAME" SCREEN -->
+    <LinearLayout android:id="@+id/screen_join_game" style="@style/LLScreen">
+
+        <TextView style="@style/Blurb" android:text="@string/created_game" />
+        <EditText
+            android:id="@+id/game_id_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView style="@style/Blurb" android:text="@string/waiting_players_join" />
+        <TextView style="@style/Blurb" android:text="@string/joined_players" />
+        <TextView android:id="@+id/current_players" style="@style/ScoreText" />
+
+        <Button
+            android:id="@+id/join_game"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/join_game"
+            android:onClick="onJoinGame"/>
+    </LinearLayout>
+
     <!-- "PLEASE WAIT" SCREEN -->
     <LinearLayout android:id="@+id/screen_wait" style="@style/LLScreen">
         <TextView style="@style/Blurb" android:text="@string/please_wait" />

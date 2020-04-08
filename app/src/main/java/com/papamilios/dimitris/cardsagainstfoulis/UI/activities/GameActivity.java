@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -30,17 +31,24 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PlayGamesAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.OnSwipeTouchListener;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.chat.ChatMessageListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
+import com.papamilios.dimitris.cardsagainstfoulis.controller.GamePlayer;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
@@ -82,6 +90,10 @@ public class GameActivity extends AppCompatActivity {
 
     String mInviterId = null;
     String mInvitationId = null;
+
+    private boolean mJoining = false;
+    private String mGameId = null;
+    private boolean mGameStarted = false;
 
     // The white card view model
     private CardViewModel mCardViewModel = null;
@@ -126,6 +138,7 @@ public class GameActivity extends AppCompatActivity {
         // Check to see if we are starting the game or we're just an invitee
         Intent intent = getIntent();
         String invitationId = intent.getStringExtra(MainActivity.INVITATION_ID);
+        mJoining = intent.getBooleanExtra(MainActivity.JOINING, false);
         if (invitationId != null) {
             mInvitationId = invitationId;
         }
@@ -147,6 +160,7 @@ public class GameActivity extends AppCompatActivity {
         findViewById(R.id.in_app_chat).setOnTouchListener(swipeListener);
         findViewById(R.id.screen_game).setOnTouchListener(swipeListener);
         findViewById(R.id.reyclerview_message_list).setOnTouchListener(swipeListener);
+        findViewById(R.id.game_id).setOnKeyListener(null);
     }
 
     public void onShowChat(View view) {
@@ -294,6 +308,144 @@ public class GameActivity extends AppCompatActivity {
         startSignInIntent();
     }
 
+    public void onStartGame(View view) {
+        switchToMainScreen();
+        keepScreenOn();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference gameRef = database.getReference("games").child(mGameId);
+        gameRef.child("started").setValue(true);
+        mController.startGame(mGameId);
+    }
+
+    public void onJoinGame(View view) {
+
+        EditText gameIdTextView = (EditText) findViewById(R.id.game_id_edit);
+        mGameId = gameIdTextView.getText().toString();
+
+        showView(R.id.game_id_edit, false);
+        showView(R.id.join_game, false);
+        showView(R.id.current_players, true);
+
+        // Add the user to the game object
+        DatabaseReference gameRef = FirebaseDatabase.getInstance().getReference().child("games").child(mGameId);
+        String userId = mFirebaseAuth.getCurrentUser().getUid();
+        mController.setMyId(userId);
+
+        ValueEventListener hostListener = new ValueEventListener() {
+          @Override
+          public void onDataChange(DataSnapshot dataSnapshot) {
+              // Get the host
+              mController.setHostId(dataSnapshot.getValue().toString());
+          }
+
+          @Override
+          public void onCancelled(DatabaseError databaseError) {
+              // Getting Post failed, log a message
+              Log.w(TAG, "hostLoad:onCancelled", databaseError.toException());
+          }
+      };
+        gameRef.child("host").addListenerForSingleValueEvent(hostListener);
+
+        ValueEventListener usersListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Get the users
+                String joinedUsers = "";
+                List<GamePlayer> players = new ArrayList<GamePlayer>();
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    String userName = userSnapshot.child("name").getValue().toString();
+                    joinedUsers += userName + "\n";
+                    players.add(new GamePlayer(userSnapshot.getKey(), userName));
+                }
+
+                mController.setPlayers(players);
+                setTextToView(R.id.current_players, joinedUsers);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadUsers:onCancelled", databaseError.toException());
+            }
+        };
+        gameRef.child("users").addValueEventListener(usersListener);
+
+        gameRef.child("users/" + userId + "/name").setValue(mFirebaseAuth.getCurrentUser().getDisplayName());
+
+        ValueEventListener startedListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!mGameStarted && dataSnapshot.getValue().equals(true)) {
+                    switchToMainScreen();
+                    keepScreenOn();
+                    mGameStarted = true;
+                    mController.startGame(mGameId);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadUsers:onCancelled", databaseError.toException());
+            }
+        };
+        gameRef.child("started").addValueEventListener(startedListener);
+
+    }
+
+    public void createGame() {
+        switchToScreen(R.id.screen_create_game);
+
+        // Create a game
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference gamesRef = database.getReference("games");
+
+        // Create the new game and push it to the games stack
+        DatabaseReference gameRef = gamesRef.push();
+        mGameId = gameRef.getKey();
+        String userId = mFirebaseAuth.getCurrentUser().getUid();
+        gameRef.child("users").child(userId).child("name").setValue(mFirebaseAuth.getCurrentUser().getDisplayName());
+        gameRef.child("host").setValue(userId);
+        gameRef.child("started").setValue(false);
+
+        mController.setHostId(userId);
+        mController.setMyId(userId);
+
+        // Populate the game ID edit text
+        EditText gameIdTextView = (EditText) findViewById(R.id.game_id);
+        gameIdTextView.setText(mGameId);
+        gameIdTextView.setFocusable(false);
+        gameIdTextView.setOnKeyListener(null);
+
+        ValueEventListener usersListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Get the users
+                String joinedUsers = "";
+                List<GamePlayer> players = new ArrayList<GamePlayer>();
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    String userName = userSnapshot.child("name").getValue().toString();
+                    joinedUsers += userName + "\n";
+                    players.add(new GamePlayer(userSnapshot.getKey(), userName));
+                }
+
+                mController.setPlayers(players);
+                setTextToView(R.id.joined_players, joinedUsers);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadUsers:onCancelled", databaseError.toException());
+            }
+        };
+        gameRef.child("users").addValueEventListener(usersListener);
+    }
+
+    public void joinGame() {
+        switchToScreen(R.id.screen_join_game);
+    }
+
     public void addChatMessage(@NonNull ChatMessage chatMsg) {
         mChatMessageAdapter.addMessage(chatMsg);
         findViewById(R.id.got_message).setVisibility(mInChat ? View.INVISIBLE : View.VISIBLE);
@@ -319,7 +471,6 @@ public class GameActivity extends AppCompatActivity {
 
     private void startGameFromInvitation() {
         // accept the invitation
-        mController.acceptInvitation(mInvitationId, mInviterId);
 
         switchToScreen(R.id.screen_wait);
         keepScreenOn();
@@ -464,7 +615,7 @@ public class GameActivity extends AppCompatActivity {
                 // ready to start playing
                 Log.d(TAG, "Starting game (waiting room returned OK).");
                 switchToMainScreen();
-                mController.startGame();
+                mController.startGame(mGameId);
             } else if (resultCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
                 // player indicated that they want to leave the room
                 leaveRoom();
@@ -568,34 +719,21 @@ public class GameActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mFirebaseAuth.getCurrentUser();
+                            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid());
+                            userRef.child("displayName").setValue(user.getDisplayName());
+                            if (mGameId == null) {
+                                if (mJoining) {
+                                    joinGame();
+                                } else {
+                                    createGame();
+                                }
+                            }
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                         }
                     }
                 });
-
-
-
-            // update the clients
-            mRealTimeMultiplayerClient = Games.getRealTimeMultiplayerClient(this, googleSignInAccount);
-
-            // get the playerId from the PlayersClient
-            PlayersClient playersClient = Games.getPlayersClient(this, googleSignInAccount);
-            playersClient.getCurrentPlayer()
-                .addOnSuccessListener(new OnSuccessListener<Player>() {
-                    @Override
-                    public void onSuccess(Player player) {
-                    mController.onConnected(player, mRealTimeMultiplayerClient);
-
-                    if (mInvitationId != null) {
-                        startGameFromInvitation();
-                    } else {
-                        startHostGame();
-                    }
-                    }
-                })
-                .addOnFailureListener(createFailureListener("There was a problem getting the player id!"));
         }
     }
 
@@ -661,7 +799,9 @@ public class GameActivity extends AppCompatActivity {
     final static int[] SCREENS = {
         R.id.screen_game,
         R.id.screen_sign_in2,
-        R.id.screen_wait
+        R.id.screen_wait,
+        R.id.screen_create_game,
+        R.id.screen_join_game
     };
     int mCurScreen = -1;
 
@@ -674,11 +814,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     void switchToMainScreen() {
-        if (mRealTimeMultiplayerClient != null) {
-            switchToScreen(R.id.screen_game);
-        } else {
-            switchToScreen(R.id.screen_sign_in);
-        }
+        switchToScreen(R.id.screen_game);
     }
 
     // Show the next round button

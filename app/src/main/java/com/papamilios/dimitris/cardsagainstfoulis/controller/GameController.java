@@ -38,7 +38,7 @@ public class GameController {
     private MessageReceiver mMsgReceiver;
 
     // The room provider
-    private RoomProvider mRoomProvider;
+    //private RoomProvider mRoomProvider;
 
     // The cards provider
     private CardProvider mCardProvider;
@@ -46,6 +46,8 @@ public class GameController {
     // My Ids
     private String mMyId = null;
     private String mPlayerId;
+
+    private String mGameId = null;
 
     // The current czar
     private String mCurCzarId = null;
@@ -64,6 +66,9 @@ public class GameController {
 
     private List<String> mReadyForNextRound = new ArrayList<String>();
 
+    private List<GamePlayer> mPlayers = new ArrayList<GamePlayer>();
+    private String mHostId = null;
+
     // The invitation id
     private String mInvitationId = null;
 
@@ -72,7 +77,6 @@ public class GameController {
         mGameActivity = activity;
         mMsgHandler = new MessageHandler(this);
         mMsgReceiver = new MessageReceiver(mMsgHandler);
-        mRoomProvider = new RoomProvider(this);
         mCardProvider = new CardProvider(activity);
         mWhiteCards = new ArrayList<Card>();
         mPlebsCards = new HashMap<String, String>();
@@ -80,26 +84,26 @@ public class GameController {
         mScoreboard = new HashMap<String, Integer>();
     }
 
-    // Accept the given invitation. This will join the room that corresponds
-    // to the given invitation ID
-    public void acceptInvitation(String invitationId, String inviterId) {
-        if (mRealTimeMultiplayerClient == null) {
-            throw new AssertionError("We need a client to join a  room");
-        }
-        mRoomProvider.joinRoom(invitationId);
-    }
-
     // Create the game room. This is only when we are the ones that are
     // hosting the game.
     public void createGameRoom(ArrayList<String> invitees) {
-        mRoomProvider.createRoom(invitees);
+
     }
 
+    public String getMyId() { return mMyId; }
+
+    public void setPlayers(@NonNull List<GamePlayer> players) { mPlayers = players; }
+    public void setHostId(@NonNull String id) { mHostId = id; }
+
     // Start the game
-    public void startGame() {
+    public void startGame(@NonNull String gameId) {
+        mGameId = gameId;
+        mMsgHandler.setGameId(gameId);
+        mMsgReceiver.startListening(mMyId);
+
         mGameActivity.showNextRoundButton(false);
-        for (Participant p : mRoomProvider.participants()) {
-            mScoreboard.put(p.getParticipantId(), 0);
+        for (GamePlayer p : mPlayers) {
+            mScoreboard.put(p.getId(), 0);
         }
         getNextCzar();
         sendInitialWhiteCards();
@@ -111,9 +115,9 @@ public class GameController {
         if (!isHost()) {
             return;
         }
-        List<Participant> plebs = mRoomProvider.participants();
-        for (Participant pleb : plebs) {
-            if (pleb.getParticipantId().equals(mRoomProvider.getHostId())) {
+
+        for (GamePlayer pleb : mPlayers) {
+            if (pleb.getId().equals(mHostId)) {
                 // For us, the host, we don't need to send messages
                 for (int i = 0; i < 10; i++) {
                     mWhiteCards.add(mCardProvider.getNextWhiteCard());
@@ -193,7 +197,7 @@ public class GameController {
     }
 
     // Send the next white card to the given player
-    public void sendCard(Participant player) {
+    public void sendCard(GamePlayer player) {
         if (!isHost()) {
             return;
         }
@@ -204,7 +208,7 @@ public class GameController {
     // Send a chat message to everyone
     public void sendChatMessage(@NonNull String msg) {
         ChatMessage chatMsg = ChatMessage.create(msg);
-        chatMsg.setSenderName(mRoomProvider.getParticipant(mMyId).getDisplayName());
+        chatMsg.setSenderName(getPlayer(mMyId).getName());
         mMsgHandler.sendChatMsg(chatMsg);
         onReceiveChatMessage(chatMsg);
     }
@@ -238,13 +242,13 @@ public class GameController {
         mReadyForNextRound.add(senderId);
 
         // Check to see if everyone is ready for the next round
-        if (mReadyForNextRound.size() == mRoomProvider.participants().size()) {
+        if (mReadyForNextRound.size() == mPlayers.size()) {
             // Send new cards to all players except the czar
             int numCardsToAdd = getNumOfAnswers();
-            for (Participant player : mRoomProvider.getMortalEnemiesOf(mCurCzarId)) {
+            for (GamePlayer player : getMortalEnemiesOf(mCurCzarId)) {
                 int numCardsToSend = numCardsToAdd;
                 while(numCardsToSend > 0) {
-                    if (player.getParticipantId().equals(mMyId)) {
+                    if (player.getId().equals(mMyId)) {
                         mWhiteCards.add(mCardProvider.getNextWhiteCard());
                     } else {
                         sendCard(player);
@@ -272,7 +276,7 @@ public class GameController {
         }
 
         mPlebsCards.put(plebId, cardText);
-        if (mPlebsCards.size() == mRoomProvider.participants().size() - 1) {
+        if (mPlebsCards.size() == mPlayers.size() - 1) {
             showCzarChoosingWinnerScreen();
         }
     }
@@ -300,7 +304,7 @@ public class GameController {
     // Called when we receive a chat message
     public void onReceiveChatMessage(@NonNull ChatMessage chatMsg) {
         if (chatMsg.getSenderName() == null) {
-            chatMsg.setSenderName(mRoomProvider.getParticipant(chatMsg.senderId()).getDisplayName());
+            chatMsg.setSenderName(getPlayer(chatMsg.senderId()).getName());
         }
         mGameActivity.addChatMessage(chatMsg);
     }
@@ -318,23 +322,18 @@ public class GameController {
     }
 
     public void leaveRoom() {
-        mRoomProvider.leaveRoom();
+
     }
 
     public boolean connectedToRoom() {
-        return mRoomProvider.connected();
+        return false;
     }
 
     public boolean isHost() {
-        return mRoomProvider.getHostId().equals(mMyId);
+        return mHostId.equals(mMyId);
     }
     public boolean isCzar() {
         return mCurCzarId.equals(mMyId);
-    }
-
-    public void onConnected(Player player, RealTimeMultiplayerClient client) {
-        mPlayerId = player.getPlayerId();
-        mRealTimeMultiplayerClient = client;
     }
 
     private void showChoosingWhiteCardScreen() {
@@ -359,7 +358,7 @@ public class GameController {
         } else {
             // the current czar for plebs
             msg = mGameActivity.getResources().getString(R.string.current_czar);
-            important = mRoomProvider.getParticipant(mCurCzarId).getDisplayName();
+            important = getPlayer(mCurCzarId).getName();
         }
         mGameActivity.showMsgAboveBlackCard(true, msg, important);
     }
@@ -403,7 +402,7 @@ public class GameController {
         mGameActivity.showScoreboard(true);
 
         String msg = mGameActivity.getResources().getString(R.string.winner_is);
-        mGameActivity.showMsgAboveBlackCard(true, msg, mRoomProvider.getParticipant(winnerId).getDisplayName());
+        mGameActivity.showMsgAboveBlackCard(true, msg, getPlayer(winnerId).getName());
     }
 
     private void showEndRoundScreen() {
@@ -416,7 +415,11 @@ public class GameController {
     }
 
     public void onConnectedToRoom() {
-        mMyId = mRoomProvider.getParticipantId(mPlayerId);
+
+    }
+
+    public void setMyId(@NonNull String id) {
+        mMyId = id;
     }
 
     public void showGameError() {
@@ -431,20 +434,30 @@ public class GameController {
         return mMsgReceiver;
     }
 
-    public String roomId() {
-        return mRoomProvider.roomId();
+    public GamePlayer getPlayer(String id) {
+        for (GamePlayer player : mPlayers) {
+            if (player.getId().equals(id)) {
+                return player;
+            }
+        }
+
+        return null;
     }
 
-    public Participant getParticipant(String id) {
-        return mRoomProvider.getParticipant(id);
+    public List<GamePlayer> getMortalEnemies() { return getMortalEnemiesOf(mMyId); }
+    public List<GamePlayer> getMortalEnemiesOf(@NonNull String id) {
+        List<GamePlayer> enemies = new ArrayList<GamePlayer>();
+        for (GamePlayer player : mPlayers) {
+            if (!player.getId().equals(id)) {
+                enemies.add(player);
+            }
+        }
+
+        return enemies;
     }
 
-    public List<Participant> getMortalEnemies() {
-        return mRoomProvider.getMortalEnemiesOf(mMyId);
-    }
-
-    public Participant getHost() {
-        return getParticipant(mRoomProvider.getHostId());
+    public GamePlayer getHost() {
+        return getPlayer(mHostId);
     }
 
     // Update the current black card
@@ -482,26 +495,25 @@ public class GameController {
     private void updateScoreboard() {
         // Update the scoreboard before we show it
         String scores = "";
-        for (Participant player : mRoomProvider.participants()) {
-            scores += player.getDisplayName() + ": " + mScoreboard.get(player.getParticipantId()) + "\n";
+        for (GamePlayer player : mPlayers) {
+            scores += player.getName() + ": " + mScoreboard.get(player.getId()) + "\n";
         }
         mGameActivity.updateScoreboard(scores);
     }
 
     private void getNextCzar() {
-        List<Participant> participants = mRoomProvider.participants();
         int curCzarIndex = -1;
-        for (int i = 0; i < participants.size(); i++) {
-            if (participants.get(i).getParticipantId().equals(mCurCzarId)) {
+        for (int i = 0; i < mPlayers.size(); i++) {
+            if (mPlayers.get(i).getId().equals(mCurCzarId)) {
                 curCzarIndex = i;
                 break;
             }
         }
-        if (curCzarIndex == participants.size() - 1) {
+        if (curCzarIndex == mPlayers.size() - 1) {
             curCzarIndex = 0;
         } else {
             curCzarIndex++;
         }
-        mCurCzarId = participants.get(curCzarIndex).getParticipantId();
+        mCurCzarId = mPlayers.get(curCzarIndex).getId();
     }
 }

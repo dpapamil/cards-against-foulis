@@ -30,6 +30,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PlayGamesAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 import com.papamilios.dimitris.cardsagainstfoulis.database.CardRepository;
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String WHITE_CARDS = "com.papamilios.dimitris.cardsagainstfoulis.WHITE_CARDS";
     public static final String INVITER_ID = "com.papamilios.dimitris.cardsagainstfoulis.INVITER_ID";
     public static final String INVITATION_ID = "com.papamilios.dimitris.cardsagainstfoulis.INVITATION_ID";
+    public static final String JOINING = "com.papamilios.dimitris.cardsagainstfoulis.JOINING";
 
     // Request codes for the UIs that we show with startActivityForResult:
     final static int RC_INVITATION_INBOX = 10001;
@@ -163,6 +166,14 @@ public class MainActivity extends AppCompatActivity {
                     repo.insert(card);
                 }
             }
+
+            // Write a message to the database
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference myRef = database.getReference("users");
+
+            myRef.child(mFirebaseAuth.getCurrentUser().getUid()).child("name").setValue(mFirebaseAuth.getCurrentUser().getDisplayName());
+            myRef.child(mFirebaseAuth.getCurrentUser().getUid()).child("message").setValue("Hello");
+
         } catch (Exception e) {
             /* proper exception handling to be here */
             Log.d(TAG, e.toString());
@@ -172,6 +183,14 @@ public class MainActivity extends AppCompatActivity {
     // Event handler for clicking the Start Game button
     public void onStartGame(View view) {
         Intent intent = new Intent(MainActivity.this, GameActivity.class);
+        intent.putExtra(JOINING, false);
+        startActivity(intent);
+    }
+
+    // Event handler for clicking the Join Game button
+    public void onJoinGame(View view) {
+        Intent intent = new Intent(MainActivity.this, GameActivity.class);
+        intent.putExtra(JOINING, true);
         startActivity(intent);
     }
 

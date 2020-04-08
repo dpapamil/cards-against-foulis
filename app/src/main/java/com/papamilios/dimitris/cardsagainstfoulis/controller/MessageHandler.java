@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.AskCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChooseWhiteCardMessage;
@@ -19,6 +21,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.IMessageVi
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SendCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.StartRoundMessage;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 public class MessageHandler implements IMessageVisitor {
@@ -26,9 +29,14 @@ public class MessageHandler implements IMessageVisitor {
     // Member Variables
     GameController mGameController;
 
+    private String mGameId = null;
+
     public MessageHandler(GameController controller) {
         mGameController = controller;
     }
+
+    public void setGameId(@NonNull String gameId) { mGameId = gameId; }
+    public String getGameId() { return mGameId; }
 
     public void visit(StartRoundMessage msg) {
         mGameController.onStartRound(msg.czarId(), msg.blackCardText());
@@ -71,7 +79,7 @@ public class MessageHandler implements IMessageVisitor {
     }
 
     // Send a white card to the given participant
-    public void sendCardMsg(String cardText, Participant player) {
+    public void sendCardMsg(String cardText, GamePlayer player) {
         GameMessage msg = SendCardMessage.create(cardText);
         sendMsg(msg, player);
     }
@@ -93,27 +101,17 @@ public class MessageHandler implements IMessageVisitor {
 
     // Send the given messag to all participants
     public void sendMsgToAll(GameMessage msg) {
-        List<Participant> enemies = mGameController.getMortalEnemies();
-        for (Participant p : enemies) {
+        List<GamePlayer> enemies = mGameController.getMortalEnemies();
+        for (GamePlayer p : enemies) {
             sendMsg(msg, p);
         }
     }
 
     // Send the given message
-    public void sendMsg(GameMessage msg, Participant receiver) {
-        if (receiver.getStatus() != Participant.STATUS_JOINED) {
-            return;
-        }
-
-        mGameController.client().sendReliableMessage(msg.bytes(), mGameController.roomId(), receiver.getParticipantId(), new RealTimeMultiplayerClient.ReliableMessageSentCallback() {
-            @Override
-            public void onRealTimeMessageSent(int statusCode, int tokenId, String recipientParticipantId) {}
-        })
-            .addOnSuccessListener(new OnSuccessListener<Integer>() {
-                @Override
-                public void onSuccess(Integer tokenId) {
-
-                }
-            });
+    public void sendMsg(GameMessage msg, GamePlayer receiver) {
+        msg.setSenderId(mGameController.getMyId());
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference gameRef = database.getReference("games").child(mGameId);
+        gameRef.child("users").child(receiver.getId()).child("message").push().updateChildren(msg.toMap());
     }
 }
