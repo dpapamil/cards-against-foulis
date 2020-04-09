@@ -6,9 +6,6 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.games.RealTimeMultiplayerClient;
-import com.google.android.gms.games.multiplayer.Participant;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.AskCardMessage;
@@ -21,7 +18,6 @@ import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.IMessageVi
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SendCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.StartRoundMessage;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 public class MessageHandler implements IMessageVisitor {

@@ -24,10 +24,6 @@
     <!-- MAIN SCREEN -->
     <LinearLayout android:id="@+id/screen_main" style="@style/LLScreen">
         <TextView style="@style/GameTitle" />
-        <Button android:id="@+id/button_see_invitations"
-            style="@style/MainScreenButton"
-            android:text="@string/see_invitations"
-            android:onClick="onShowInvitations"/>
 
         <Button android:id="@+id/button_sign_out"
             style="@style/SignOutButton"

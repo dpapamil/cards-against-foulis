@@ -7,10 +7,6 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
 import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.google.android.gms.games.Player;
-import com.google.android.gms.games.RealTimeMultiplayerClient;
-import com.google.android.gms.games.multiplayer.Participant;
-import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
@@ -25,9 +21,6 @@ import java.util.Map;
 public class GameController {
     // Member Variables
 
-    // Client used to interact with the real time multiplayer system.
-    private RealTimeMultiplayerClient mRealTimeMultiplayerClient = null;
-
     // The game activity
     private GameActivity mGameActivity;
 
@@ -37,16 +30,11 @@ public class GameController {
     // The message receiver
     private MessageReceiver mMsgReceiver;
 
-    // The room provider
-    //private RoomProvider mRoomProvider;
-
     // The cards provider
     private CardProvider mCardProvider;
 
     // My Ids
     private String mMyId = null;
-    private String mPlayerId;
-
     private String mGameId = null;
 
     // The current czar
@@ -69,9 +57,6 @@ public class GameController {
     private List<GamePlayer> mPlayers = new ArrayList<GamePlayer>();
     private String mHostId = null;
 
-    // The invitation id
-    private String mInvitationId = null;
-
 
     public GameController(GameActivity activity) {
         mGameActivity = activity;
@@ -82,12 +67,6 @@ public class GameController {
         mPlebsCards = new HashMap<String, String>();
         mCurBlackCard = new Card(0, "", false);
         mScoreboard = new HashMap<String, Integer>();
-    }
-
-    // Create the game room. This is only when we are the ones that are
-    // hosting the game.
-    public void createGameRoom(ArrayList<String> invitees) {
-
     }
 
     public String getMyId() { return mMyId; }
@@ -321,14 +300,6 @@ public class GameController {
         mGameActivity.showRoomEvent(msg);
     }
 
-    public void leaveRoom() {
-
-    }
-
-    public boolean connectedToRoom() {
-        return false;
-    }
-
     public boolean isHost() {
         return mHostId.equals(mMyId);
     }
@@ -410,24 +381,12 @@ public class GameController {
         mGameActivity.showWaitForOthers(true);
     }
 
-    public void onRoomCreated(Room room) {
-        mGameActivity.showWaitingRoom(room);
-    }
-
-    public void onConnectedToRoom() {
-
-    }
-
     public void setMyId(@NonNull String id) {
         mMyId = id;
     }
 
     public void showGameError() {
         mGameActivity.showGameError();
-    }
-
-    public RealTimeMultiplayerClient client() {
-        return mRealTimeMultiplayerClient;
     }
 
     public MessageReceiver msgReceiver() {

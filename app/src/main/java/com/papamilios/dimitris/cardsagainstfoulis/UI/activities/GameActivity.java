@@ -19,19 +19,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.games.Games;
-import com.google.android.gms.games.GamesActivityResultCodes;
-import com.google.android.gms.games.GamesCallbackStatusCodes;
-import com.google.android.gms.games.GamesClientStatusCodes;
-import com.google.android.gms.games.Player;
-import com.google.android.gms.games.PlayersClient;
-import com.google.android.gms.games.RealTimeMultiplayerClient;
-import com.google.android.gms.games.multiplayer.realtime.Room;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -70,26 +59,18 @@ public class GameActivity extends AppCompatActivity {
 
     final static String TAG = "CardsAgainstFoulis";
 
-    // Request codes for the UIs that we show with startActivityForResult:
-    final static int RC_SELECT_PLAYERS = 10000;
-    final static int RC_WAITING_ROOM = 10002;
-
     // Request code used to invoke sign in user interactions.
     private static final int RC_SIGN_IN = 9001;
 
     // Client used to sign in with Google APIs
     private GoogleSignInClient mGoogleSignInClient = null;
+    // The currently signed in account, used to check the account has changed outside of this activity when resuming.
+    private GoogleSignInAccount mSignedInAccount = null;
 
     // The Firebase authentication object
     private FirebaseAuth mFirebaseAuth = null;
 
-    // Client used to interact with the real time multiplayer system.
-    private RealTimeMultiplayerClient mRealTimeMultiplayerClient = null;
-
     private GameController mController;
-
-    String mInviterId = null;
-    String mInvitationId = null;
 
     private boolean mJoining = false;
     private String mGameId = null;
@@ -127,7 +108,8 @@ public class GameActivity extends AppCompatActivity {
         mController = new GameController(this);
 
         // Create the client used to sign in.
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
+        GoogleSignInOptions gso = new GoogleSignInOptions
+            .Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
             .requestServerAuthCode(getString(R.string.default_web_client_id))
             .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -135,13 +117,9 @@ public class GameActivity extends AppCompatActivity {
         // Sign in silently
         signInSilently();
 
-        // Check to see if we are starting the game or we're just an invitee
+        // Check to see if we are starting the game or we're joining a game
         Intent intent = getIntent();
-        String invitationId = intent.getStringExtra(MainActivity.INVITATION_ID);
         mJoining = intent.getBooleanExtra(MainActivity.JOINING, false);
-        if (invitationId != null) {
-            mInvitationId = invitationId;
-        }
 
         // Hide chat
         findViewById(R.id.got_message).setVisibility(View.INVISIBLE);
@@ -324,10 +302,13 @@ public class GameActivity extends AppCompatActivity {
 
         showView(R.id.game_id_edit, false);
         showView(R.id.join_game, false);
+        showView(R.id.players_joined, true);
+        showView(R.id.waiting_players_join, true);
         showView(R.id.current_players, true);
 
         // Add the user to the game object
         DatabaseReference gameRef = FirebaseDatabase.getInstance().getReference().child("games").child(mGameId);
+
         String userId = mFirebaseAuth.getCurrentUser().getUid();
         mController.setMyId(userId);
 
@@ -444,6 +425,8 @@ public class GameActivity extends AppCompatActivity {
 
     public void joinGame() {
         switchToScreen(R.id.screen_join_game);
+        showView(R.id.players_joined, false);
+        showView(R.id.waiting_players_join, false);
     }
 
     public void addChatMessage(@NonNull ChatMessage chatMsg) {
@@ -451,29 +434,6 @@ public class GameActivity extends AppCompatActivity {
         findViewById(R.id.got_message).setVisibility(mInChat ? View.INVISIBLE : View.VISIBLE);
         RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
         recyclerChatView.smoothScrollToPosition(mChatMessageAdapter.getItemCount() - 1);
-    }
-
-    // Start a game as a host
-    private void startHostGame() {
-        // Show the wait screen
-        switchToScreen(R.id.screen_wait);
-
-        // show list of invitable players
-        mRealTimeMultiplayerClient.getSelectOpponentsIntent(1, 7).addOnSuccessListener(
-            new OnSuccessListener<Intent>() {
-                @Override
-                public void onSuccess(Intent intent) {
-                startActivityForResult(intent, RC_SELECT_PLAYERS);
-                }
-            }
-        ).addOnFailureListener(createFailureListener("There was a problem selecting opponents."));
-    }
-
-    private void startGameFromInvitation() {
-        // accept the invitation
-
-        switchToScreen(R.id.screen_wait);
-        keepScreenOn();
     }
 
     /**
@@ -517,68 +477,11 @@ public class GameActivity extends AppCompatActivity {
 
                 if (task.isSuccessful()) {
                     Log.d(TAG, "signOut(): success");
-                } else {
-                    handleException(task.getException(), "signOut() failed!");
                 }
 
                 onDisconnected();
                 }
             });
-    }
-
-    /**
-     * Since a lot of the operations use tasks, we can use a common handler for whenever one fails.
-     *
-     * @param exception The exception to evaluate.  Will try to display a more descriptive reason for the exception.
-     * @param details   Will display alongside the exception if you wish to provide more details for why the exception
-     *                  happened
-     */
-    private void handleException(Exception exception, String details) {
-        int status = 0;
-
-        if (exception instanceof ApiException) {
-            ApiException apiException = (ApiException) exception;
-            status = apiException.getStatusCode();
-        }
-
-        String errorString = null;
-        switch (status) {
-            case GamesCallbackStatusCodes.OK:
-                break;
-            case GamesClientStatusCodes.MULTIPLAYER_ERROR_NOT_TRUSTED_TESTER:
-                errorString = getString(R.string.status_multiplayer_error_not_trusted_tester);
-                break;
-            case GamesClientStatusCodes.MATCH_ERROR_ALREADY_REMATCHED:
-                errorString = getString(R.string.match_error_already_rematched);
-                break;
-            case GamesClientStatusCodes.NETWORK_ERROR_OPERATION_FAILED:
-                errorString = getString(R.string.network_error_operation_failed);
-                break;
-            case GamesClientStatusCodes.INTERNAL_ERROR:
-                errorString = getString(R.string.internal_error);
-                break;
-            case GamesClientStatusCodes.MATCH_ERROR_INACTIVE_MATCH:
-                errorString = getString(R.string.match_error_inactive_match);
-                break;
-            case GamesClientStatusCodes.MATCH_ERROR_LOCALLY_MODIFIED:
-                errorString = getString(R.string.match_error_locally_modified);
-                break;
-            default:
-                errorString = getString(R.string.unexpected_status, GamesClientStatusCodes.getStatusCodeString(status));
-                break;
-        }
-
-        if (errorString == null) {
-            return;
-        }
-
-        String message = getString(R.string.status_exception_error, details, status, exception);
-
-        new AlertDialog.Builder(GameActivity.this)
-            .setTitle("Error")
-            .setMessage(message + "\n" + errorString)
-            .setNeutralButton(android.R.string.ok, null)
-            .show();
     }
 
     @Override
@@ -605,62 +508,14 @@ public class GameActivity extends AppCompatActivity {
                         .setNeutralButton(android.R.string.ok, null)
                         .show();
             }
-        } else if (requestCode == RC_SELECT_PLAYERS) {
-            // we got the result from the "select players" UI -- ready to create the room
-            handleSelectPlayersResult(resultCode, intent);
-
-        } else if (requestCode == RC_WAITING_ROOM) {
-            // we got the result from the "waiting room" UI.
-            if (resultCode == Activity.RESULT_OK) {
-                // ready to start playing
-                Log.d(TAG, "Starting game (waiting room returned OK).");
-                switchToMainScreen();
-                mController.startGame(mGameId);
-            } else if (resultCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
-                // player indicated that they want to leave the room
-                leaveRoom();
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                // Dialog was cancelled (user pressed back key, for instance). In our game,
-                // this means leaving the room too. In more elaborate games, this could mean
-                // something else (like minimizing the waiting room UI).
-                leaveRoom();
-            }
         }
         super.onActivityResult(requestCode, resultCode, intent);
-    }
-
-    // Handle the result of the "Select players UI" we launched when the user clicked the
-    // "Invite friends" button. We react by creating a room with those players.
-
-    private void handleSelectPlayersResult(int response, Intent data) {
-        if (response != AppCompatActivity.RESULT_OK) {
-            Log.w(TAG, "*** select players UI cancelled, " + response);
-            switchToMainScreen();
-            return;
-        }
-
-        Log.d(TAG, "Select players UI succeeded.");
-
-        // get the invitee list
-        final ArrayList<String> invitees = data.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
-        Log.d(TAG, "Invitee count: " + invitees.size());
-
-        // create the room
-        Log.d(TAG, "Creating room...");
-        switchToScreen(R.id.screen_wait);
-        keepScreenOn();
-
-        mController.createGameRoom(invitees);
-        Log.d(TAG, "Room created, waiting for it to be ready...");
     }
 
     // Activity is going to the background. We have to leave the current room.
     @Override
     public void onStop() {
         Log.d(TAG, "**** got onStop");
-
-        // if we're in a room, leave it.
-        leaveRoom();
 
         // stop trying to keep the screen on
         stopKeepingScreenOn();
@@ -669,34 +524,6 @@ public class GameActivity extends AppCompatActivity {
 
         super.onStop();
     }
-
-    // Show the waiting room UI to track the progress of other players as they enter the
-    // room and get connected.
-    public void showWaitingRoom(Room room) {
-        // minimum number of players required for our game
-        // For simplicity, we require everyone to join the game before we start it
-        // (this is signaled by Integer.MAX_VALUE).
-        final int MIN_PLAYERS = Integer.MAX_VALUE;
-        mRealTimeMultiplayerClient.getWaitingRoomIntent(room, MIN_PLAYERS)
-            .addOnSuccessListener(new OnSuccessListener<Intent>() {
-                @Override
-                public void onSuccess(Intent intent) {
-                // show waiting room UI
-                startActivityForResult(intent, RC_WAITING_ROOM);
-                }
-            })
-            .addOnFailureListener(createFailureListener("There was a problem getting the waiting room!"));
-    }
-
-    /*
-     * CALLBACKS SECTION. This section shows how we implement the several games
-     * API callbacks.
-     */
-
-    private String mPlayerId;
-
-    // The currently signed in account, used to check the account has changed outside of this activity when resuming.
-    GoogleSignInAccount mSignedInAccount = null;
 
     private void onConnected(GoogleSignInAccount googleSignInAccount) {
         Log.d(TAG, "onConnected(): connected to Google APIs");
@@ -737,34 +564,10 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    private OnFailureListener createFailureListener(final String string) {
-        return new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                handleException(e, string);
-            }
-        };
-    }
-
     public void onDisconnected() {
         Log.d(TAG, "onDisconnected()");
 
-        mRealTimeMultiplayerClient = null;
-
         switchToMainScreen();
-    }
-
-
-    // Leave the room.
-    private void leaveRoom() {
-        Log.d(TAG, "Leaving room.");
-        stopKeepingScreenOn();
-        if (mController.connectedToRoom()) {
-            mController.leaveRoom();
-            switchToScreen(R.id.screen_wait);
-        } else {
-            switchToMainScreen();
-        }
     }
 
     // Show error message about game being cancelled and return to main screen.

@@ -4,8 +4,6 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
@@ -15,13 +13,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.GameMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.MessageFactory;
 
 import java.nio.charset.Charset;
 
-public class MessageReceiver implements OnRealTimeMessageReceivedListener {
+public class MessageReceiver {
 
     // Member Variables
     MessageHandler mMsgHandler;
@@ -77,18 +74,5 @@ public class MessageReceiver implements OnRealTimeMessageReceivedListener {
 
         mMessagesRef.addChildEventListener(messageListener);
     }
-
-    // Override from OnRealTimeMessageReceivedListener.
-    // This is called when we receive a message from teh multiplayer client
-    public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
-        byte[] buf = realTimeMessage.getMessageData();
-
-        // Create the message and set its sender
-        GameMessage msg = MessageFactory.create(buf);
-        msg.setSenderId(realTimeMessage.getSenderParticipantId());
-
-        // Handle the message
-        msg.accept(mMsgHandler);
-    };
 }
 
