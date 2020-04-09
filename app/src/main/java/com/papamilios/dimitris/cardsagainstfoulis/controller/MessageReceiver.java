@@ -26,6 +26,8 @@ public class MessageReceiver implements OnRealTimeMessageReceivedListener {
     // Member Variables
     MessageHandler mMsgHandler;
 
+    DatabaseReference mMessagesRef = null;
+
     // Constructor
     public MessageReceiver(MessageHandler msgHandler) {
         mMsgHandler = msgHandler;
@@ -34,7 +36,7 @@ public class MessageReceiver implements OnRealTimeMessageReceivedListener {
     public void startListening(@NonNull String userId) {
 
         DatabaseReference gameRef = FirebaseDatabase.getInstance().getReference().child("games").child(mMsgHandler.getGameId());
-        DatabaseReference messagesRef = gameRef.child("users/" + userId + "/message");
+        mMessagesRef = gameRef.child("users/" + userId + "/message");
 
         ChildEventListener messageListener = new ChildEventListener() {
 
@@ -52,6 +54,8 @@ public class MessageReceiver implements OnRealTimeMessageReceivedListener {
 
                 msg.setSenderId(senderId);
                 msg.accept(mMsgHandler);
+
+                mMessagesRef.child(dataSnapshot.getKey()).removeValue();
             }
 
             @Override
@@ -71,7 +75,7 @@ public class MessageReceiver implements OnRealTimeMessageReceivedListener {
             }
         };
 
-        messagesRef.addChildEventListener(messageListener);
+        mMessagesRef.addChildEventListener(messageListener);
     }
 
     // Override from OnRealTimeMessageReceivedListener.
