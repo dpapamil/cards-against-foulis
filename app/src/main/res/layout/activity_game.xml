@@ -4,7 +4,7 @@
     Copyright 2018 Cards Against Foulis Co
 -->
 
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -21,6 +21,48 @@
             android:onClick="onSignIn"/>
     </LinearLayout>
 
+    <!-- "CREATE GAME" SCREEN -->
+    <LinearLayout android:id="@+id/screen_create_game" style="@style/LLScreen">
+
+        <TextView style="@style/Blurb" android:text="@string/created_game" />
+        <EditText
+            android:id="@+id/game_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView style="@style/Blurb" android:text="@string/waiting_players_join" />
+        <TextView style="@style/Blurb" android:text="@string/joined_players" />
+        <TextView android:id="@+id/joined_players" style="@style/ScoreText" />
+
+        <Button
+            android:id="@+id/start_game_btn2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_game"
+            android:onClick="onStartGame"/>
+    </LinearLayout>
+
+    <!-- "JOIN GAME" SCREEN -->
+    <LinearLayout android:id="@+id/screen_join_game" style="@style/LLScreen">
+
+        <TextView style="@style/Blurb" android:text="@string/game_id" />
+        <EditText
+            android:id="@+id/game_id_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView android:id="@+id/waiting_players_join" style="@style/Blurb" android:text="@string/waiting_players_join" />
+        <TextView android:id="@+id/players_joined" style="@style/Blurb" android:text="@string/joined_players" />
+        <TextView android:id="@+id/current_players" style="@style/ScoreText" />
+
+        <Button
+            android:id="@+id/join_game"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/join_game"
+            android:onClick="onJoinGame"/>
+    </LinearLayout>
+
     <!-- "PLEASE WAIT" SCREEN -->
     <LinearLayout android:id="@+id/screen_wait" style="@style/LLScreen">
         <TextView style="@style/Blurb" android:text="@string/please_wait" />
@@ -29,7 +71,7 @@
     <!-- GAMEPLAY SCREEN -->
     <LinearLayout android:id="@+id/screen_game" style="@style/LLScreen">
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/got_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -69,7 +111,7 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" >
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/white_cards"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -128,4 +170,4 @@
         <include layout="@layout/chat_layout" />
     </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

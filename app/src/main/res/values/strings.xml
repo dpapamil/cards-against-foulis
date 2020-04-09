@@ -22,6 +22,7 @@ limitations under the License. -->
     <string name="black_cards">Black Cards</string>
     <string name="load_cards">Load Cards from a spreadsheet</string>
     <string name="start_game">Start Game</string>
+    <string name="join_game">Join Game</string>
     <string name="sign_in">Sign In</string>
     <string name="button_save">Save</string>
 
@@ -38,6 +39,12 @@ limitations under the License. -->
     <string name="match_error_inactive_match">This match is inactive.</string>
     <string name='match_error_locally_modified'>This match has locally-modified data.  This operation cannot be performed until the match is sent to the server.</string>
     <string name="empty_not_saved">Card not saved because it is empty.</string>
+
+    <string name="created_game">Created game ID</string>
+    <string name="waiting_players_join">Waiting for players to join</string>
+    <string name="joined_players">Players that joined</string>
+
+    <string name="game_id">Give us the game ID, you fool(is)</string>
 
     <string name="next_black_card">Next Round</string>
     <string name="choose_white_card">Choose Card</string>

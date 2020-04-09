@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "921729056638",
+    "firebase_url": "https://cards-against-foulis.firebaseio.com",
+    "project_id": "cards-against-foulis",
+    "storage_bucket": "cards-against-foulis.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:921729056638:android:128dc288f46b9630543d2f",
+        "android_client_info": {
+          "package_name": "com.papamilios.dimitris.cardsagainstfoulis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "921729056638-a93tjq147bmngjbg604jb6vbs37pfs6v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.papamilios.dimitris.cardsagainstfoulis",
+            "certificate_hash": "d4ee5cf777cef1b7b33111a191b5d7592320429a"
+          }
+        },
+        {
+          "client_id": "921729056638-31tf6hiu5hnofleol7q63q85qsk8ppvd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCacrKnEEShlovSdMvbQgru3xncL7Bwn9k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "921729056638-31tf6hiu5hnofleol7q63q85qsk8ppvd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

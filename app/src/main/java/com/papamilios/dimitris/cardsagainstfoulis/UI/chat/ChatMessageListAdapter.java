@@ -3,7 +3,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.chat;
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +12,6 @@ import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class ChatMessageListAdapter extends RecyclerView.Adapter<ChatMessageViewHolder> {

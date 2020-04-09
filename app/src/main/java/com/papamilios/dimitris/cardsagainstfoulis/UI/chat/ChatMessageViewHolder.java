@@ -2,7 +2,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.chat;
 
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
