@@ -89,6 +89,51 @@ public class GameActivity extends AppCompatActivity {
     private ChatMessageListAdapter mChatMessageAdapter = null;
     private boolean mInChat = false;
 
+    // The listener for changing users for the game
+    private ValueEventListener mUsersListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            // Get the users
+            String joinedUsers = "";
+            List<GamePlayer> players = new ArrayList<GamePlayer>();
+            for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                String userName = userSnapshot.child("name").getValue().toString();
+                joinedUsers += userName + "\n";
+                players.add(new GamePlayer(userSnapshot.getKey(), userName));
+            }
+
+            if (mGameStarted) {
+                List<GamePlayer> curPlayers = mController.getPlayers();
+                if (players.size() > curPlayers.size()) {
+                    throw new AssertionError("That probably means that a player was added after the game was started?");
+                }
+                List<String> losers = new ArrayList<String>();
+                for (GamePlayer player : curPlayers) {
+                    if (!players.contains(player)) {
+                        losers.add(player.getName());
+                    }
+                }
+
+                if (!losers.isEmpty()) {
+                    mController.onPlayersLeft(losers);
+                    return;
+                }
+            } else {
+                mController.setPlayers(players);
+                int viewId = mJoining ? R.id.current_players : R.id.joined_players;
+                TextView usersText = (TextView) findViewById(viewId);
+                usersText.setText("");
+                setTextToView(viewId, joinedUsers);
+            }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            // Getting Post failed, log a message
+            Log.w(TAG, "loadUsers:onCancelled", databaseError.toException());
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -229,6 +274,13 @@ public class GameActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to exit?\nIf you exit, Foulis will clog your toilet...")
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+
+                        // Remove ourselves from the game
+                        if (mGameId != null) {
+                            DatabaseReference gameRef = FirebaseDatabase.getInstance().getReference().child("games").child(mGameId);
+                            DatabaseReference userRef = gameRef.child("users/" + mController.getMyId());
+                            userRef.removeValue();
+                        }
                         GameActivity.super.onBackPressed();
                     }
                 })
@@ -300,6 +352,7 @@ public class GameActivity extends AppCompatActivity {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference gameRef = database.getReference("games").child(mGameId);
         gameRef.child("started").setValue(true);
+        mGameStarted = true;
         mController.startGame(mGameId);
     }
 
@@ -336,29 +389,7 @@ public class GameActivity extends AppCompatActivity {
         };
         gameRef.child("host").addListenerForSingleValueEvent(hostListener);
 
-        ValueEventListener usersListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // Get the users
-                String joinedUsers = "";
-                List<GamePlayer> players = new ArrayList<GamePlayer>();
-                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
-                    String userName = userSnapshot.child("name").getValue().toString();
-                    joinedUsers += userName + "\n";
-                    players.add(new GamePlayer(userSnapshot.getKey(), userName));
-                }
-
-                mController.setPlayers(players);
-                setTextToView(R.id.current_players, joinedUsers);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Getting Post failed, log a message
-                Log.w(TAG, "loadUsers:onCancelled", databaseError.toException());
-            }
-        };
-        gameRef.child("users").addValueEventListener(usersListener);
+        gameRef.child("users").addValueEventListener(mUsersListener);
 
         gameRef.child("users/" + userId + "/name").setValue(mFirebaseAuth.getCurrentUser().getDisplayName());
 
@@ -407,29 +438,7 @@ public class GameActivity extends AppCompatActivity {
         gameIdTextView.setInputType(InputType.TYPE_NULL);
         gameIdTextView.setTextIsSelectable(true);
 
-        ValueEventListener usersListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // Get the users
-                String joinedUsers = "";
-                List<GamePlayer> players = new ArrayList<GamePlayer>();
-                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
-                    String userName = userSnapshot.child("name").getValue().toString();
-                    joinedUsers += userName + "\n";
-                    players.add(new GamePlayer(userSnapshot.getKey(), userName));
-                }
-
-                mController.setPlayers(players);
-                setTextToView(R.id.joined_players, joinedUsers);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Getting Post failed, log a message
-                Log.w(TAG, "loadUsers:onCancelled", databaseError.toException());
-            }
-        };
-        gameRef.child("users").addValueEventListener(usersListener);
+        gameRef.child("users").addValueEventListener(mUsersListener);
     }
 
     public void joinGame() {
@@ -466,7 +475,9 @@ public class GameActivity extends AppCompatActivity {
                 ValueEventListener gamesListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        mJoinGameBtn.setEnabled(dataSnapshot.hasChild(gameId));
+                        boolean allowJoin = dataSnapshot.hasChild(gameId) &&
+                                            dataSnapshot.child(gameId + "/started").getValue().equals(false);
+                        mJoinGameBtn.setEnabled(allowJoin);
                     }
 
                     @Override

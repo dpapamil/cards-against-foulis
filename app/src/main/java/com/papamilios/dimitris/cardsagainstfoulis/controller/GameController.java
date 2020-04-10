@@ -72,6 +72,7 @@ public class GameController {
     public String getMyId() { return mMyId; }
 
     public void setPlayers(@NonNull List<GamePlayer> players) { mPlayers = players; }
+    public List<GamePlayer> getPlayers() { return mPlayers; }
     public void setHostId(@NonNull String id) { mHostId = id; }
 
     // Start the game

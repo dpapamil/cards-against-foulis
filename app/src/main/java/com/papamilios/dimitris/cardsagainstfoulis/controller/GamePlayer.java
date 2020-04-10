@@ -16,4 +16,18 @@ public class GamePlayer {
 
     public String getId() { return mId; }
     public String getName() { return mName; }
+
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        GamePlayer otherPlayer = (GamePlayer) other;
+        return mId.equals(otherPlayer.getId()) &&
+                mName.equals(otherPlayer.getName());
+    }
 }
