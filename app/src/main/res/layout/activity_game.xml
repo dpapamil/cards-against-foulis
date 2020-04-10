@@ -47,7 +47,7 @@
     <!-- "JOIN GAME" SCREEN -->
     <LinearLayout android:id="@+id/screen_join_game" style="@style/LLScreen">
 
-        <TextView style="@style/Blurb" android:text="@string/game_id" />
+        <TextView android:id="@+id/game_id_prompt" style="@style/Blurb" android:text="@string/game_id" />
         <EditText
             android:id="@+id/game_id_edit"
             android:layout_width="match_parent"

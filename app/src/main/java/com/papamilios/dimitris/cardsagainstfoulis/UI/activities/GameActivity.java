@@ -303,6 +303,7 @@ public class GameActivity extends AppCompatActivity {
         EditText gameIdTextView = (EditText) findViewById(R.id.game_id_edit);
         mGameId = gameIdTextView.getText().toString();
 
+        showView(R.id.game_id_prompt, false);
         showView(R.id.game_id_edit, false);
         showView(R.id.join_game, false);
         showView(R.id.players_joined, true);
