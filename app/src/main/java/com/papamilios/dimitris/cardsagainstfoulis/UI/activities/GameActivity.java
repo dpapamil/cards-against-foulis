@@ -241,6 +241,10 @@ public class GameActivity extends AppCompatActivity {
         // Since the state of the signed in user can change when the activity is not active
         // it is recommended to try and sign in silently from when the app resumes.
         signInSilently();
+
+        if (mGameStarted) {
+            keepScreenOn();
+        }
     }
 
     @Override
@@ -520,7 +524,6 @@ public class GameActivity extends AppCompatActivity {
         // stop trying to keep the screen on
         stopKeepingScreenOn();
 
-        switchToMainScreen();
 
         super.onStop();
     }
