@@ -28,7 +28,9 @@
         <EditText
             android:id="@+id/game_id"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:textIsSelectable="true"/>
 
         <TextView style="@style/Blurb" android:text="@string/waiting_players_join" />
         <TextView style="@style/Blurb" android:text="@string/joined_players" />

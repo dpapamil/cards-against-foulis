@@ -138,7 +138,6 @@ public class GameActivity extends AppCompatActivity {
         findViewById(R.id.in_app_chat).setOnTouchListener(swipeListener);
         findViewById(R.id.screen_game).setOnTouchListener(swipeListener);
         findViewById(R.id.reyclerview_message_list).setOnTouchListener(swipeListener);
-        findViewById(R.id.game_id).setOnKeyListener(null);
     }
 
     public void onShowChat(View view) {
@@ -399,8 +398,8 @@ public class GameActivity extends AppCompatActivity {
         // Populate the game ID edit text
         EditText gameIdTextView = (EditText) findViewById(R.id.game_id);
         gameIdTextView.setText(mGameId);
-        gameIdTextView.setFocusable(false);
-        gameIdTextView.setOnKeyListener(null);
+        gameIdTextView.setInputType(InputType.TYPE_NULL);
+        gameIdTextView.setTextIsSelectable(true);
 
         ValueEventListener usersListener = new ValueEventListener() {
             @Override
