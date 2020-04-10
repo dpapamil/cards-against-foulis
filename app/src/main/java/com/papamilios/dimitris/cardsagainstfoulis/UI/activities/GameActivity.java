@@ -6,11 +6,15 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -75,6 +79,7 @@ public class GameActivity extends AppCompatActivity {
     private boolean mJoining = false;
     private String mGameId = null;
     private boolean mGameStarted = false;
+    private Button mJoinGameBtn = null;
 
     // The white card view model
     private CardViewModel mCardViewModel = null;
@@ -328,7 +333,7 @@ public class GameActivity extends AppCompatActivity {
               // Getting Post failed, log a message
               Log.w(TAG, "hostLoad:onCancelled", databaseError.toException());
           }
-      };
+        };
         gameRef.child("host").addListenerForSingleValueEvent(hostListener);
 
         ValueEventListener usersListener = new ValueEventListener() {
@@ -431,6 +436,48 @@ public class GameActivity extends AppCompatActivity {
         switchToScreen(R.id.screen_join_game);
         showView(R.id.players_joined, false);
         showView(R.id.waiting_players_join, false);
+
+        if (mJoinGameBtn == null) {
+            mJoinGameBtn = findViewById(R.id.join_game);
+        }
+        mJoinGameBtn.setEnabled(false);
+
+        EditText gameIdTextView = (EditText) findViewById(R.id.game_id_edit);
+        gameIdTextView.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+                if(s.length() == 0) {
+                    mJoinGameBtn.setEnabled(false);
+                    return;
+                }
+
+                DatabaseReference gamesRef = FirebaseDatabase.getInstance().getReference().child("games");
+                final String gameId = s.toString();
+                ValueEventListener gamesListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        mJoinGameBtn.setEnabled(dataSnapshot.hasChild(gameId));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        // Getting Post failed, log a message
+                        Log.w(TAG, "hostLoad:onCancelled", databaseError.toException());
+                    }
+                };
+                gamesRef.addListenerForSingleValueEvent(gamesListener);
+            }
+        });
     }
 
     public void addChatMessage(@NonNull ChatMessage chatMsg) {
