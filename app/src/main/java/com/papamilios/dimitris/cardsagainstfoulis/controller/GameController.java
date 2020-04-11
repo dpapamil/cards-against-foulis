@@ -13,6 +13,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessag
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,10 +53,15 @@ public class GameController {
     // The scoreboard
     private Map<String, Integer> mScoreboard;
 
+    // The list of user IDs that are ready for starting the next round
     private List<String> mReadyForNextRound = new ArrayList<String>();
 
     private List<GamePlayer> mPlayers = new ArrayList<GamePlayer>();
+
     private String mHostId = null;
+
+    // The game state
+    private GameState mGameState = new GameState();
 
 
     public GameController(GameActivity activity) {
@@ -81,10 +87,13 @@ public class GameController {
         mMsgHandler.setGameId(gameId);
         mMsgReceiver.startListening(mMyId);
 
-        mGameActivity.showNextRoundButton(false);
+        List<String> userNames = new ArrayList<String>();
         for (GamePlayer p : mPlayers) {
             mScoreboard.put(p.getId(), 0);
+            userNames.add(p.getName());
         }
+        mGameState.initialiseScoreboard(userNames);
+
         getNextCzar();
         sendInitialWhiteCards();
         startRound();
@@ -102,7 +111,8 @@ public class GameController {
                 for (int i = 0; i < 10; i++) {
                     mWhiteCards.add(mCardProvider.getNextWhiteCard());
                 }
-                updateWhiteCardsView(mWhiteCards);
+
+                mGameState.setDisplayedCards(mWhiteCards);
             } else {
                 // Send the white cards as messages
                 for (int i = 0; i < 10; i++) {
@@ -136,6 +146,8 @@ public class GameController {
             // Send a message to the host to end this round
             mMsgHandler.sendEndRoundMsg();
         }
+
+        updateView();
     }
 
     public void chooseCards(List<Card> chosenCards) {
@@ -161,12 +173,13 @@ public class GameController {
             mWhiteCards.remove(card);
         }
 
-        updateWhiteCardsView(mWhiteCards);
         showWaitOthersToChooseScreen();
 
         Card chosenCard = CardUtils.mergeWhiteCards(chosenCards);
         mMsgHandler.sendChooseWhiteCardMsg(chosenCard.getText());
         onGetChosenCard(chosenCard.getText(), mMyId);
+
+        updateView();
     }
 
 
@@ -205,7 +218,12 @@ public class GameController {
         mCurBlackCard.setText(blackCardText);
         mCurCzarId = czarId;
 
+        mGameState.setBlackCard(mCurBlackCard);
+        mGameState.setCzarName(getPlayer(mCurCzarId).getName());
+
         showChoosingWhiteCardScreen();
+
+        updateView();
     }
 
     // Handle ending this round
@@ -246,7 +264,7 @@ public class GameController {
     // Handler for receiving a white card
     public void onReceiveCard(String cardText) {
         mWhiteCards.add(new Card(0, cardText, true));
-        updateWhiteCardsView(mWhiteCards);
+        mGameState.setDisplayedCards(mWhiteCards);
     }
 
     // Handler for receiving the card a pleb has chosen
@@ -257,7 +275,9 @@ public class GameController {
 
         mPlebsCards.put(plebId, cardText);
         if (mPlebsCards.size() == mPlayers.size() - 1) {
+            mGameState.setRoundPhase(RoundPhase.CHOOSING_WINNER_CARD);
             showCzarChoosingWinnerScreen();
+            mGameActivity.update(mGameState);
         }
     }
 
@@ -269,7 +289,7 @@ public class GameController {
                 // This is the winner. Increase his score
                 winnerId = pair.getKey();
                 mScoreboard.put(pair.getKey(), mScoreboard.get(pair.getKey()) + 1);
-                updateScoreboard();
+                mGameState.increaseScore(getPlayer(winnerId).getName());
                 break;
             }
         }
@@ -278,7 +298,10 @@ public class GameController {
             return;
         }
 
+        mGameState.setRoundPhase(RoundPhase.WINNER);
         showWinnerScreen(cardText, winnerId);
+
+        updateView();
     }
 
     // Called when we receive a chat message
@@ -295,9 +318,7 @@ public class GameController {
             return;
         }
         String msg = mGameActivity.getResourceString(R.string.players_left) + "\n";
-        for (String name : playersNames) {
-            msg += TextUtils.join(", ", playersNames);
-        }
+        msg += TextUtils.join(", ", playersNames);
         mGameActivity.showRoomEvent(msg);
     }
 
@@ -309,89 +330,47 @@ public class GameController {
     }
 
     private void showChoosingWhiteCardScreen() {
-        updateBlackCardView();
-
-        mGameActivity.showScoreboard(false);
-        mGameActivity.showWaitForOthers(false);
-
-        // Show the white cards and the button only if we aren't a czar
-        mGameActivity.clearWhiteCardsSelection();
-        mGameActivity.setWhiteCardsSelection(getNumOfAnswers(), true);
-        mGameActivity.updateWhiteCardsView(mWhiteCards);
-        mGameActivity.showWhiteCards(!isCzar());
-        mGameActivity.showChooseCard(!isCzar());
-
-        // Show the message above the black card
-        String msg = "";
-        String important = "";
-        if (isCzar()) {
-            // "wait for plebs" for the czar
-            msg = mGameActivity.getResources().getString(R.string.waiting_for_plebs);
-        } else {
-            // the current czar for plebs
-            msg = mGameActivity.getResources().getString(R.string.current_czar);
-            important = getPlayer(mCurCzarId).getName();
-        }
-        mGameActivity.showMsgAboveBlackCard(true, msg, important);
+        mGameState.setRoundPhase(RoundPhase.CHOOSING_WHITE_CARD);
+        mGameState.setWaitingForOthers(false);
+        mGameState.setDisplayedCards(mWhiteCards);
+        mGameState.clearCardSelection();
+        mGameState.setIsCzar(isCzar());
+        mGameState.setmNumMaxSelections(getNumOfAnswers());
     }
 
     private void showWaitOthersToChooseScreen() {
         showChoosingWhiteCardScreen();
-        mGameActivity.setWhiteCardsSelection(getNumOfAnswers(), false);
-        mGameActivity.showWhiteCards(false);
-        mGameActivity.showChooseCard(false);
-        mGameActivity.showWaitForOthers(true);
+
+        mGameState.setWaitingForOthers(true);
     }
 
     private void showAllAnswersScreen() {
         // Show the answers, if we received all of them
         // Enable the selection only for the czars
         showAnswerCards();
-        mGameActivity.showWhiteCards(true);
-        mGameActivity.setWhiteCardsSelection(1, isCzar());
-        mGameActivity.showChooseCard(isCzar());
-        mGameActivity.showWaitForOthers(false);
 
-        int strId = isCzar()? R.string.choose_winner : R.string.waiting_for_czar;
-        String msg = mGameActivity.getResources().getString(strId);
-        mGameActivity.showMsgAboveBlackCard(true, msg, "");
-    }
-
-    private void showCzarScreen() {
-        showChoosingWhiteCardScreen();
+        mGameState.setmNumMaxSelections(1);
     }
 
     private void showCzarChoosingWinnerScreen() {
-        showCzarScreen();
         showAllAnswersScreen();
     }
 
     private void showWinnerScreen(@NonNull String cardText, @NonNull String winnerId) {
-        mGameActivity.setWhiteCardsSelection(1, false);
-        mGameActivity.selectWhiteCard(cardText);
-        mGameActivity.showChooseCard(false);
-        mGameActivity.showNextRoundButton(true);
-        mGameActivity.showScoreboard(true);
+        List<Card> selectedCards = new ArrayList<Card>(Arrays.asList(new Card(0, cardText, true)));
+        mGameState.setSelectedCards(selectedCards);
+        mGameState.setmNumMaxSelections(0);
 
-        String msg = mGameActivity.getResources().getString(R.string.winner_is);
-        mGameActivity.showMsgAboveBlackCard(true, msg, getPlayer(winnerId).getName());
+        mGameState.setWinnerName(getPlayer(winnerId).getName());
+        mGameState.setWaitingForOthers(false);
     }
 
     private void showEndRoundScreen() {
-        mGameActivity.showNextRoundButton(false);
-        mGameActivity.showWaitForOthers(true);
+        mGameState.setWaitingForOthers(true);
     }
 
     public void setMyId(@NonNull String id) {
         mMyId = id;
-    }
-
-    public void showGameError() {
-        mGameActivity.showGameError();
-    }
-
-    public MessageReceiver msgReceiver() {
-        return mMsgReceiver;
     }
 
     public GamePlayer getPlayer(String id) {
@@ -420,16 +399,6 @@ public class GameController {
         return getPlayer(mHostId);
     }
 
-    // Update the current black card
-    public void updateBlackCardView() {
-        mGameActivity.updateBlackCardView(mCurBlackCard.getText());
-    }
-
-    // Update the white cards
-    public void updateWhiteCardsView(List<Card> cards) {
-        mGameActivity.updateWhiteCardsView(cards);
-    }
-
     // This will show the answer cards
     public void showAnswerCards() {
         // All plebs have given their answers. Show their answers
@@ -438,7 +407,7 @@ public class GameController {
             answerCards.add(new Card(0, cardText, true));
         }
         Collections.shuffle(answerCards);
-        updateWhiteCardsView(answerCards);
+        mGameState.setDisplayedCards(answerCards);
     }
 
     // Get the number of needed answers for the current black card.
@@ -449,16 +418,6 @@ public class GameController {
         }
 
         return CardUtils.numberOfAnswers(mCurBlackCard);
-    }
-
-    // Update the scoreboard
-    private void updateScoreboard() {
-        // Update the scoreboard before we show it
-        String scores = "";
-        for (GamePlayer player : mPlayers) {
-            scores += player.getName() + ": " + mScoreboard.get(player.getId()) + "\n";
-        }
-        mGameActivity.updateScoreboard(scores);
     }
 
     private void getNextCzar() {
@@ -474,6 +433,13 @@ public class GameController {
         } else {
             curCzarIndex++;
         }
-        mCurCzarId = mPlayers.get(curCzarIndex).getId();
+        
+        GamePlayer czar = mPlayers.get(curCzarIndex);
+        mCurCzarId = czar.getId();
+        mGameState.setCzarName(czar.getName());
+    }
+
+    private void updateView() {
+        mGameActivity.update(mGameState);
     }
 }

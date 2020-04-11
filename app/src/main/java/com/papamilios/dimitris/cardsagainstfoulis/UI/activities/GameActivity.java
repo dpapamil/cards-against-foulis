@@ -42,11 +42,14 @@ import com.papamilios.dimitris.cardsagainstfoulis.UI.OnSwipeTouchListener;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.chat.ChatMessageListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GamePlayer;
+import com.papamilios.dimitris.cardsagainstfoulis.controller.GameState;
+import com.papamilios.dimitris.cardsagainstfoulis.controller.RoundPhase;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -767,6 +770,135 @@ public class GameActivity extends AppCompatActivity {
     // Get the specified resource string
     public String getResourceString(int id) {
         return getResources().getString(id);
+    }
+
+    // Update the view
+    // This is the control function that does the view update based on the given
+    // state of the game
+    public void update(GameState gameState) {
+        RoundPhase phase = gameState.getRoundPhase();
+        switch (phase) {
+            case CHOOSING_WHITE_CARD: {
+                updateChoosingWhiteCardScreen(gameState);
+                break;
+            }
+            case CHOOSING_WINNER_CARD: {
+                updateChoosingWinnerScreen(gameState);
+                break;
+            }
+            case WINNER: {
+                updateWinnerScreen(gameState);
+                break;
+            }
+            default: {
+
+            }
+        }
+    }
+
+    // Update the choosing white card screen. This should be the first phase of the round
+    public void updateChoosingWhiteCardScreen(GameState gameState) {
+        if (gameState.getRoundPhase() != RoundPhase.CHOOSING_WHITE_CARD) {
+            throw new AssertionError("Wrong phase");
+        }
+
+        boolean isCzar = gameState.isCzar();
+        boolean waiting = gameState.waitingForOthers();
+
+        showNextRoundButton(false);
+        showScoreboard(false);
+
+        // Show the black card
+        updateBlackCardView(gameState.getBlackCard().getText());
+        // Show the cards we are supposed to display
+        updateWhiteCardsView(gameState.getDisplayedCards());
+        // Update the cards' selection according to the state
+        clearWhiteCardsSelection();
+        setWhiteCardsSelection(gameState.getNumMaxSelection(), !waiting);
+
+        // Show the cards only for plebs that are not waiting
+        // waiting for a pleb means that they made their choice
+        boolean showChoices = !isCzar && !waiting;
+        showWhiteCards(showChoices);
+        showChooseCard(showChoices);
+        showWaitForOthers(waiting);
+
+        // Show the message above the black card
+        String msg = "";
+        String important = "";
+        if (gameState.isCzar()) {
+            // "wait for plebs" for the czar
+            msg = getResources().getString(R.string.waiting_for_plebs);
+        } else {
+            // the current czar for plebs
+            msg = getResources().getString(R.string.current_czar);
+            important = gameState.getCzarName();
+        }
+        showMsgAboveBlackCard(true, msg, important);
+
+    }
+
+    // Update the choosing the winner screen. This should be the second phase of the round
+    public void updateChoosingWinnerScreen(GameState gameState) {
+        if (gameState.getRoundPhase() != RoundPhase.CHOOSING_WINNER_CARD) {
+            throw new AssertionError("Wrong phase");
+        }
+
+        boolean isCzar = gameState.isCzar();
+
+        showNextRoundButton(false);
+        showScoreboard(false);
+
+        // Show the black card
+        updateBlackCardView(gameState.getBlackCard().getText());
+        // Show the cards we are supposed to display
+        updateWhiteCardsView(gameState.getDisplayedCards());
+        // Enable the cards's selection only for the czar
+        clearWhiteCardsSelection();
+        setWhiteCardsSelection(gameState.getNumMaxSelection(), isCzar);
+
+        showWhiteCards(true);
+        showChooseCard(isCzar);
+        showWaitForOthers(false);
+
+        int strId = isCzar? R.string.choose_winner : R.string.waiting_for_czar;
+        String msg = getResources().getString(strId);
+        showMsgAboveBlackCard(true, msg, "");
+    }
+
+    // Update the winner screen. This should be the third phase of the round
+    public void updateWinnerScreen(GameState gameState) {
+        if (gameState.getRoundPhase() != RoundPhase.WINNER) {
+            throw new AssertionError("Wrong phase");
+        }
+
+        // Hide the choose button
+        showChooseCard(false);
+        // Show the next round button only if haven't pressed it already
+        showNextRoundButton(!gameState.waitingForOthers());
+        // Show the cards and the scoreboard
+        showWhiteCards(true);
+
+        // Update the scoreboard before we show it
+        String scores = "";
+        for (Map.Entry<String, Integer> entry : gameState.getScoreboard().entrySet()) {
+            scores += entry.getKey() + ": " + entry.getValue() + "\n";
+        }
+        updateScoreboard(scores);
+        showScoreboard(true);
+
+        // Show the black card
+        updateBlackCardView(gameState.getBlackCard().getText());
+        // Show the cards we are supposed to display
+        updateWhiteCardsView(gameState.getDisplayedCards());
+        // Select only the winning card and disable selection
+        clearWhiteCardsSelection();
+        setWhiteCardsSelection(gameState.getNumMaxSelection(), false);
+        selectWhiteCard(gameState.getSelectedCards().get(0).getText());
+
+        showWaitForOthers(gameState.waitingForOthers());
+
+        showMsgAboveBlackCard(true, getResourceString(R.string.winner_is), gameState.getWinnerName());
     }
 
     /*
