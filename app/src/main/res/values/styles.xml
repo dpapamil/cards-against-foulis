@@ -121,7 +121,7 @@ limitations under the License. -->
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/PopupTextColor</item>
         <item name="android:text">@string/inv_popup_text</item>
         <item name="android:gravity">center</item>
     </style>
