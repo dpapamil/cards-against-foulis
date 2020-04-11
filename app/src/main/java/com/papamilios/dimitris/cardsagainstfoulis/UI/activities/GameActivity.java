@@ -49,6 +49,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -871,6 +872,33 @@ public class GameActivity extends AppCompatActivity {
             throw new AssertionError("Wrong phase");
         }
 
+        // Hide the choose button
+        showChooseCard(false);
+        // Show the next round button only if haven't pressed it already
+        showNextRoundButton(!gameState.waitingForOthers());
+        // Show the cards and the scoreboard
+        showWhiteCards(true);
+
+        // Update the scoreboard before we show it
+        String scores = "";
+        for (Map.Entry<String, Integer> entry : gameState.getScoreboard().entrySet()) {
+            scores += entry.getKey() + ": " + entry.getValue() + "\n";
+        }
+        updateScoreboard(scores);
+        showScoreboard(true);
+
+        // Show the black card
+        updateBlackCardView(gameState.getBlackCard().getText());
+        // Show the cards we are supposed to display
+        updateWhiteCardsView(gameState.getDisplayedCards());
+        // Select only the winning card and disable selection
+        clearWhiteCardsSelection();
+        setWhiteCardsSelection(gameState.getNumMaxSelection(), false);
+        selectWhiteCard(gameState.getSelectedCards().get(0).getText());
+
+        showWaitForOthers(gameState.waitingForOthers());
+
+        showMsgAboveBlackCard(true, getResourceString(R.string.winner_is), gameState.getWinnerName());
     }
 
     /*

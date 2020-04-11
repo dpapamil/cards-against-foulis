@@ -7,13 +7,13 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
 import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.google.android.gms.games.Game;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -87,8 +87,6 @@ public class GameController {
         mMsgHandler.setGameId(gameId);
         mMsgReceiver.startListening(mMyId);
 
-        mGameActivity.showNextRoundButton(false);
-
         List<String> userNames = new ArrayList<String>();
         for (GamePlayer p : mPlayers) {
             mScoreboard.put(p.getId(), 0);
@@ -148,6 +146,8 @@ public class GameController {
             // Send a message to the host to end this round
             mMsgHandler.sendEndRoundMsg();
         }
+
+        updateView();
     }
 
     public void chooseCards(List<Card> chosenCards) {
@@ -221,7 +221,7 @@ public class GameController {
 
         showChoosingWhiteCardScreen();
 
-        mGameActivity.update(mGameState);
+        updateView();
     }
 
     // Handle ending this round
@@ -262,7 +262,7 @@ public class GameController {
     // Handler for receiving a white card
     public void onReceiveCard(String cardText) {
         mWhiteCards.add(new Card(0, cardText, true));
-        updateWhiteCardsView(mWhiteCards);
+        mGameState.setDisplayedCards(mWhiteCards);
     }
 
     // Handler for receiving the card a pleb has chosen
@@ -288,7 +288,7 @@ public class GameController {
                 // This is the winner. Increase his score
                 winnerId = pair.getKey();
                 mScoreboard.put(pair.getKey(), mScoreboard.get(pair.getKey()) + 1);
-                updateScoreboard();
+                mGameState.increaseScore(getPlayer(winnerId).getName());
                 break;
             }
         }
@@ -297,7 +297,10 @@ public class GameController {
             return;
         }
 
+        mGameState.setRoundPhase(RoundPhase.WINNER);
         showWinnerScreen(cardText, winnerId);
+
+        updateView();
     }
 
     // Called when we receive a chat message
@@ -314,9 +317,7 @@ public class GameController {
             return;
         }
         String msg = mGameActivity.getResourceString(R.string.players_left) + "\n";
-        for (String name : playersNames) {
-            msg += TextUtils.join(", ", playersNames);
-        }
+        msg += TextUtils.join(", ", playersNames);
         mGameActivity.showRoomEvent(msg);
     }
 
@@ -355,31 +356,20 @@ public class GameController {
     }
 
     private void showWinnerScreen(@NonNull String cardText, @NonNull String winnerId) {
-        mGameActivity.setWhiteCardsSelection(1, false);
-        mGameActivity.selectWhiteCard(cardText);
-        mGameActivity.showChooseCard(false);
-        mGameActivity.showNextRoundButton(true);
-        mGameActivity.showScoreboard(true);
+        List<Card> selectedCards = new ArrayList<Card>(Arrays.asList(new Card(0, cardText, true)));
+        mGameState.setSelectedCards(selectedCards);
+        mGameState.setmNumMaxSelections(0);
 
-        String msg = mGameActivity.getResources().getString(R.string.winner_is);
-        mGameActivity.showMsgAboveBlackCard(true, msg, getPlayer(winnerId).getName());
+        mGameState.setWinnerName(getPlayer(winnerId).getName());
+        mGameState.setWaitingForOthers(false);
     }
 
     private void showEndRoundScreen() {
-        mGameActivity.showNextRoundButton(false);
-        mGameActivity.showWaitForOthers(true);
+        mGameState.setWaitingForOthers(true);
     }
 
     public void setMyId(@NonNull String id) {
         mMyId = id;
-    }
-
-    public void showGameError() {
-        mGameActivity.showGameError();
-    }
-
-    public MessageReceiver msgReceiver() {
-        return mMsgReceiver;
     }
 
     public GamePlayer getPlayer(String id) {
@@ -408,16 +398,6 @@ public class GameController {
         return getPlayer(mHostId);
     }
 
-    // Update the current black card
-    public void updateBlackCardView() {
-        mGameActivity.updateBlackCardView(mCurBlackCard.getText());
-    }
-
-    // Update the white cards
-    public void updateWhiteCardsView(List<Card> cards) {
-        mGameActivity.updateWhiteCardsView(cards);
-    }
-
     // This will show the answer cards
     public void showAnswerCards() {
         // All plebs have given their answers. Show their answers
@@ -439,16 +419,6 @@ public class GameController {
         return CardUtils.numberOfAnswers(mCurBlackCard);
     }
 
-    // Update the scoreboard
-    private void updateScoreboard() {
-        // Update the scoreboard before we show it
-        String scores = "";
-        for (GamePlayer player : mPlayers) {
-            scores += player.getName() + ": " + mScoreboard.get(player.getId()) + "\n";
-        }
-        mGameActivity.updateScoreboard(scores);
-    }
-
     private void getNextCzar() {
         int curCzarIndex = -1;
         for (int i = 0; i < mPlayers.size(); i++) {
@@ -466,5 +436,9 @@ public class GameController {
         GamePlayer czar = mPlayers.get(curCzarIndex);
         mCurCzarId = czar.getId();
         mGameState.setCzarName(czar.getName());
+    }
+
+    private void updateView() {
+        mGameActivity.update(mGameState);
     }
 }
