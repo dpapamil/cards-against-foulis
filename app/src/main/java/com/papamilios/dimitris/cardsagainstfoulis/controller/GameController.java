@@ -178,6 +178,8 @@ public class GameController {
         Card chosenCard = CardUtils.mergeWhiteCards(chosenCards);
         mMsgHandler.sendChooseWhiteCardMsg(chosenCard.getText());
         onGetChosenCard(chosenCard.getText(), mMyId);
+
+        updateView();
     }
 
 
@@ -275,9 +277,8 @@ public class GameController {
         if (mPlebsCards.size() == mPlayers.size() - 1) {
             mGameState.setRoundPhase(RoundPhase.CHOOSING_WINNER_CARD);
             showCzarChoosingWinnerScreen();
+            mGameActivity.update(mGameState);
         }
-
-        mGameActivity.update(mGameState);
     }
 
     // Handler for receiving the winning card
