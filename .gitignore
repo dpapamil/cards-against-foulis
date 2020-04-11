@@ -11,3 +11,4 @@ build/
 /app/release
 *.jks
 *.properties
+release/
