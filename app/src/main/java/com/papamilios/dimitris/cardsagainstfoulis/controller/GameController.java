@@ -7,6 +7,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
 import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.google.android.gms.games.Game;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
@@ -60,7 +61,7 @@ public class GameController {
     private String mHostId = null;
 
     // The game state
-    private GameState mGameState;
+    private GameState mGameState = new GameState();
 
 
     public GameController(GameActivity activity) {
@@ -87,8 +88,11 @@ public class GameController {
         mMsgReceiver.startListening(mMyId);
 
         mGameActivity.showNextRoundButton(false);
-        for (Participant p : mRoomProvider.participants()) {
-            mScoreboard.put(p.getParticipantId(), 0);
+
+        List<String> userNames = new ArrayList<String>();
+        for (GamePlayer p : mPlayers) {
+            mScoreboard.put(p.getId(), 0);
+            userNames.add(p.getName());
         }
         mGameState.initialiseScoreboard(userNames);
 
@@ -109,7 +113,7 @@ public class GameController {
                 for (int i = 0; i < 10; i++) {
                     mWhiteCards.add(mCardProvider.getNextWhiteCard());
                 }
-                //updateWhiteCardsView(mWhiteCards);
+
                 mGameState.setDisplayedCards(mWhiteCards);
             } else {
                 // Send the white cards as messages
@@ -169,7 +173,6 @@ public class GameController {
             mWhiteCards.remove(card);
         }
 
-        updateWhiteCardsView(mWhiteCards);
         showWaitOthersToChooseScreen();
 
         Card chosenCard = CardUtils.mergeWhiteCards(chosenCards);
@@ -214,7 +217,7 @@ public class GameController {
         mCurCzarId = czarId;
 
         mGameState.setBlackCard(mCurBlackCard);
-        mGameState.setCzarName(getParticipant(mCurCzarId).getDisplayName());
+        mGameState.setCzarName(getPlayer(mCurCzarId).getName());
 
         showChoosingWhiteCardScreen();
 
@@ -270,8 +273,11 @@ public class GameController {
 
         mPlebsCards.put(plebId, cardText);
         if (mPlebsCards.size() == mPlayers.size() - 1) {
+            mGameState.setRoundPhase(RoundPhase.CHOOSING_WINNER_CARD);
             showCzarChoosingWinnerScreen();
         }
+
+        mGameActivity.update(mGameState);
     }
 
     // Handler for receiving the winning card
@@ -324,6 +330,7 @@ public class GameController {
     private void showChoosingWhiteCardScreen() {
         mGameState.setRoundPhase(RoundPhase.CHOOSING_WHITE_CARD);
         mGameState.setWaitingForOthers(false);
+        mGameState.setDisplayedCards(mWhiteCards);
         mGameState.clearCardSelection();
         mGameState.setIsCzar(isCzar());
         mGameState.setmNumMaxSelections(getNumOfAnswers());
@@ -333,30 +340,17 @@ public class GameController {
         showChoosingWhiteCardScreen();
 
         mGameState.setWaitingForOthers(true);
-
-        mGameActivity.update(mGameState);
     }
 
     private void showAllAnswersScreen() {
         // Show the answers, if we received all of them
         // Enable the selection only for the czars
         showAnswerCards();
-        mGameActivity.showWhiteCards(true);
-        mGameActivity.setWhiteCardsSelection(1, isCzar());
-        mGameActivity.showChooseCard(isCzar());
-        mGameActivity.showWaitForOthers(false);
 
-        int strId = isCzar()? R.string.choose_winner : R.string.waiting_for_czar;
-        String msg = mGameActivity.getResources().getString(strId);
-        mGameActivity.showMsgAboveBlackCard(true, msg, "");
-    }
-
-    private void showCzarScreen() {
-        showChoosingWhiteCardScreen();
+        mGameState.setmNumMaxSelections(1);
     }
 
     private void showCzarChoosingWinnerScreen() {
-        showCzarScreen();
         showAllAnswersScreen();
     }
 
@@ -432,7 +426,7 @@ public class GameController {
             answerCards.add(new Card(0, cardText, true));
         }
         Collections.shuffle(answerCards);
-        updateWhiteCardsView(answerCards);
+        mGameState.setDisplayedCards(answerCards);
     }
 
     // Get the number of needed answers for the current black card.

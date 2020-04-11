@@ -805,14 +805,18 @@ public class GameActivity extends AppCompatActivity {
         boolean waiting = gameState.waitingForOthers();
 
         showNextRoundButton(false);
-        updateWhiteCardsView(gameState.getDisplayedCards());
-        updateBlackCardView(gameState.getBlackCard().getText());
         showScoreboard(false);
 
+        // Show the black card
+        updateBlackCardView(gameState.getBlackCard().getText());
+        // Show the cards we are supposed to display
+        updateWhiteCardsView(gameState.getDisplayedCards());
+        // Update the cards' selection according to the state
         clearWhiteCardsSelection();
         setWhiteCardsSelection(gameState.getNumMaxSelection(), !waiting);
-        updateWhiteCardsView(gameState.getDisplayedCards());
 
+        // Show the cards only for plebs that are not waiting
+        // waiting for a pleb means that they made their choice
         boolean showChoices = !isCzar && !waiting;
         showWhiteCards(showChoices);
         showChooseCard(showChoices);
@@ -839,6 +843,26 @@ public class GameActivity extends AppCompatActivity {
             throw new AssertionError("Wrong phase");
         }
 
+        boolean isCzar = gameState.isCzar();
+
+        showNextRoundButton(false);
+        showScoreboard(false);
+
+        // Show the black card
+        updateBlackCardView(gameState.getBlackCard().getText());
+        // Show the cards we are supposed to display
+        updateWhiteCardsView(gameState.getDisplayedCards());
+        // Enable the cards's selection only for the czar
+        clearWhiteCardsSelection();
+        setWhiteCardsSelection(gameState.getNumMaxSelection(), isCzar);
+
+        showWhiteCards(true);
+        showChooseCard(isCzar);
+        showWaitForOthers(false);
+
+        int strId = isCzar? R.string.choose_winner : R.string.waiting_for_czar;
+        String msg = getResources().getString(strId);
+        showMsgAboveBlackCard(true, msg, "");
     }
 
     // Update the winner screen. This should be the third phase of the round

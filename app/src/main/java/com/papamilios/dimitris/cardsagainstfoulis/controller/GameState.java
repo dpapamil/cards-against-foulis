@@ -4,19 +4,14 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2020 Cards Against Foulis Co.
  */
 
-import android.arch.lifecycle.Observer;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
-import com.papamilios.dimitris.cardsagainstfoulis.database.CardRoomDatabase;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import androidx.annotation.NonNull;
 
 import static com.papamilios.dimitris.cardsagainstfoulis.controller.RoundPhase.CHOOSING_WHITE_CARD;
 
