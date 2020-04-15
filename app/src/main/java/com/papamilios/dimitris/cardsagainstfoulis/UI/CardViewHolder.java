@@ -16,6 +16,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 class CardViewHolder extends RecyclerView.ViewHolder {
     private final CheckedTextView mCardItemView;
+    private View mParentItem = null;
     private Card mCard;
     private boolean mSelected = false;
     private OnItemSelectedListener mListener;
@@ -23,6 +24,7 @@ class CardViewHolder extends RecyclerView.ViewHolder {
 
     public CardViewHolder(View itemView, OnItemSelectedListener listener) {
         super(itemView);
+        mParentItem = itemView;
         mListener = listener;
         mCardItemView = (CheckedTextView) itemView.findViewById(R.id.textView);
 
@@ -34,7 +36,6 @@ class CardViewHolder extends RecyclerView.ViewHolder {
                     return;
                 }
 
-                //setChecked(!mSelected);
                 mListener.onSelectionChanged(mCard);
 
             }
@@ -53,15 +54,10 @@ class CardViewHolder extends RecyclerView.ViewHolder {
 
     public void setChecked(boolean value) {
         if (value) {
-            //mCardItemView.setBackgroundColor(Color.parseColor("#4287f5"));
-            View parent = (View) mCardItemView.getParent();
-            parent.setBackground(ResourcesCompat.getDrawable(parent.getResources(), R.drawable.white_card_selected_back, null));
-            //parent.setBackgroundColor(Color.parseColor("#4287f5"));
+            mParentItem.setBackground(ResourcesCompat.getDrawable(mParentItem.getResources(), R.drawable.white_card_selected_back, null));
             mCardItemView.setTextColor(Color.WHITE);
         } else {
-            //mCardItemView.setBackgroundColor(Color.WHITE);
-            View parent = (View) mCardItemView.getParent();
-            parent.setBackground(ResourcesCompat.getDrawable(parent.getResources(), R.drawable.white_card_back, null));
+            mParentItem.setBackground(ResourcesCompat.getDrawable(mParentItem.getResources(), R.drawable.white_card_back, null));
             mCardItemView.setTextColor(Color.BLACK);
         }
         mCardItemView.setChecked(value);
