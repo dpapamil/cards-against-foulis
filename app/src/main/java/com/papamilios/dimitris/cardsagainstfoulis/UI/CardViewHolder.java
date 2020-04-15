@@ -3,7 +3,11 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI;
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
 import android.graphics.Color;
+
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.CheckedTextView;
 
@@ -49,9 +53,16 @@ class CardViewHolder extends RecyclerView.ViewHolder {
 
     public void setChecked(boolean value) {
         if (value) {
-            mCardItemView.setBackgroundColor(Color.LTGRAY);
+            //mCardItemView.setBackgroundColor(Color.parseColor("#4287f5"));
+            View parent = (View) mCardItemView.getParent();
+            parent.setBackground(ResourcesCompat.getDrawable(parent.getResources(), R.drawable.white_card_selected_back, null));
+            //parent.setBackgroundColor(Color.parseColor("#4287f5"));
+            mCardItemView.setTextColor(Color.WHITE);
         } else {
-            mCardItemView.setBackgroundColor(Color.WHITE);
+            //mCardItemView.setBackgroundColor(Color.WHITE);
+            View parent = (View) mCardItemView.getParent();
+            parent.setBackground(ResourcesCompat.getDrawable(parent.getResources(), R.drawable.white_card_back, null));
+            mCardItemView.setTextColor(Color.BLACK);
         }
         mCardItemView.setChecked(value);
         mSelected = value;

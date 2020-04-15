@@ -105,8 +105,8 @@
 
         </LinearLayout>
 
-        <LinearLayout style="@style/ScoresBox">
-            <TextView android:id="@+id/cur_black_card" style="@style/ScoreText" />
+        <LinearLayout style="@style/BlackCardBox">
+            <TextView android:id="@+id/cur_black_card" style="@style/blackCardText" />
         </LinearLayout>
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -117,7 +117,6 @@
                 android:id="@+id/white_cards"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/white"
                 android:layout_alignParentTop="true"
                 android:layout_above="@id/wait_others"
                 tools:listitem="@layout/recyclerview_item" />
