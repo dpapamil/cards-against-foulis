@@ -19,4 +19,10 @@ limitations under the License. -->
     <color name="colorAccent">#FF4081</color>
     <color name="buttonLabel">#d3d3d3</color>
     <color name="scoreboxBackground">#F0F0F0</color>
+    <color name="blackCardBackground">#000000</color>
+    <color name="blackCardBorder">#FFFFFF</color>
+    <color name="blackCardTextColour">#FFFFFF</color>
+    <color name="whiteCardBackground">#FFFFFF</color>
+    <color name="whiteCardBorder">#4287f5</color>
+    <color name="whiteCardTextColour">#000000</color>
 </resources>
