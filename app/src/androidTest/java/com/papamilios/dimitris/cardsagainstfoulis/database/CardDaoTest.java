@@ -30,7 +30,7 @@ public class CardDaoTest {
 
     @Before
     public void createDb() {
-        Context context = InstrumentationRegistry.getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         // Using an in-memory database because the information stored here disappears when the
         // process is killed.
         mDb = Room.inMemoryDatabaseBuilder(context, CardRoomDatabase.class)
