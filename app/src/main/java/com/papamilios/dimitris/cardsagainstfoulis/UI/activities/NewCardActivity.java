@@ -28,6 +28,9 @@ public class NewCardActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_card);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher_round);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
         mEditCardView = findViewById(R.id.edit_word);
 
         Intent intent = getIntent();

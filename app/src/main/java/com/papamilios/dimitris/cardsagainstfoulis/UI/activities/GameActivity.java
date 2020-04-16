@@ -141,6 +141,9 @@ public class GameActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher_round);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
         switchToScreen(R.id.screen_wait);
 
         RecyclerView recyclerView = findViewById(R.id.white_cards);

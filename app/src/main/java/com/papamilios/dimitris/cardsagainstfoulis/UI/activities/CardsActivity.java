@@ -39,6 +39,9 @@ public class CardsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cards);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher_round);
+        getSupportActionBar().setDisplayUseLogoEnabled(true);
 
         Intent intent = getIntent();
         String message = intent.getStringExtra(MainActivity.WHITE_CARDS);

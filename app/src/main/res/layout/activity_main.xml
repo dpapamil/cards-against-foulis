@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
-        android:theme="@style/AppTheme.NoActionBar"
+        android:theme="@style/AppTheme"
         app:titleTextColor="@android:color/white"/>
 
     <LinearLayout android:id="@+id/screen_sign_in" style="@style/LLScreen">
