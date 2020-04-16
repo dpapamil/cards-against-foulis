@@ -5,6 +5,8 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -48,6 +50,7 @@ import java.io.InputStream;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 /*
 *  The main activity of the application.
@@ -82,14 +85,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar_main);
+        myToolbar.inflateMenu(R.menu.menu_main);
+        setSupportActionBar(myToolbar);
 
         // Create the client used to sign in.
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
             .requestServerAuthCode(getString(R.string.default_web_client_id))
             .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-        //signInSilently();
         switchToMainScreen();
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.clear();
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        menu.findItem(R.id.sign_out).setVisible(mSignedInAccount != null);
+        return true;
     }
 
     void switchToMainScreen() {
@@ -107,6 +120,33 @@ public class MainActivity extends AppCompatActivity {
         }
         mCurScreen = screenId;
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.white_cards: {
+                onShowWhiteCards(item.getActionView());
+                return true;
+            }
+            case R.id.black_cards: {
+                onShowBlackCards(item.getActionView());
+                return true;
+            }
+            case R.id.load_cards: {
+                onLoadCards(item.getActionView());
+                return true;
+            }
+            case R.id.sign_out: {
+                onSignOut(item.getActionView());
+                return true;
+            }
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
 
     // Event handler for clicking the White Cards button
     public void onShowWhiteCards(View view) {
@@ -332,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onDisconnected() {
         Log.d(TAG, "onDisconnected()");
-
+        mSignedInAccount = null;
         switchToMainScreen();
     }
 }

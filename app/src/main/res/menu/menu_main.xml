@@ -3,8 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.papamilios.dimitris.cardsagainstfoulis.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/white_cards"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="@string/white_cards"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/black_cards"
+        android:orderInCategory="101"
+        android:title="@string/black_cards"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/load_cards"
+        android:orderInCategory="102"
+        android:title="@string/load_cards"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/sign_out"
+        android:orderInCategory="103"
+        android:title="@string/sign_out"
         app:showAsAction="never" />
 </menu>

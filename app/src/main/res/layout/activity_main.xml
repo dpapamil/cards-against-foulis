@@ -12,8 +12,16 @@
     tools:context=".UI.activities.MainActivity">
 
     <!-- SIGN-IN SCREEN -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/AppTheme.NoActionBar"
+        app:titleTextColor="@android:color/white"/>
+
     <LinearLayout android:id="@+id/screen_sign_in" style="@style/LLScreen">
-        <TextView style="@style/GameTitle" />
 
         <Button
             android:id="@+id/button_sign_in"
@@ -21,52 +29,23 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:background="@drawable/white_card_selected_back"
-            android:textColor="@color/blackCardTextColour"
+            android:textColor="@color/colorWhiteFont"
             android:onClick="onSignIn"
             android:text="@string/sign_in" />
     </LinearLayout>
 
     <!-- MAIN SCREEN -->
     <LinearLayout android:id="@+id/screen_main" style="@style/LLScreen">
-        <TextView style="@style/GameTitle" />
-
-        <Button android:id="@+id/button_sign_out"
-            style="@style/SignOutButton"
-            android:text="@string/sign_out"
-            android:onClick="onSignOut"/>
-
-        <Button
-            android:id="@+id/white_cards_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/white_cards"
-            android:onClick="onShowWhiteCards"/>
-
-        <Button
-            android:id="@+id/black_cards_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/black_cards"
-            android:onClick="onShowBlackCards"/>
-
-        <Button
-            android:id="@+id/load_cards"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/load_cards"
-            android:onClick="onLoadCards"/>
 
         <Button
             android:id="@+id/join_game_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/join_game"
-            android:onClick="onJoinGame"/>
+            style="@style/GameButton"
+            android:onClick="onJoinGame"
+            android:text="@string/join_game" />
 
         <Button
             android:id="@+id/start_game_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/GameButton"
             android:text="@string/start_game"
             android:onClick="onStartGame"/>
 

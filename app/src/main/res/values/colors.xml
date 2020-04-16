@@ -14,15 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License. -->
 
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryDark">#2196F3</color>
+    <color name="colorAccent">#D5A560</color>
+    <color name="colorWhiteFont">#FFFFFF</color>
     <color name="buttonLabel">#d3d3d3</color>
-    <color name="scoreboxBackground">#F0F0F0</color>
-    <color name="blackCardBackground">#000000</color>
+
+    <color name="AccentColor">#D5A560</color>
+    <color name="PopupColor">@color/AccentColor</color>
+    <color name="PopupTextColor">#ffffff</color>
+    <color name="ButtonTextColor">#ffffff</color>
+    <color name="BlurbColor">#a0a0a0</color>
+    <color name="SignOutButtonBackground">#e0e0e0</color>
+    <color name="SignOutButtonTextColor">#404040</color>
+
+    <color name="scoreboxBackground">#009688</color>
+    <color name="blackCardBackground">#554E4E</color>
     <color name="blackCardBorder">#FFFFFF</color>
     <color name="blackCardTextColour">#FFFFFF</color>
     <color name="whiteCardBackground">#FFFFFF</color>
-    <color name="whiteCardBorder">#4287f5</color>
+    <color name="whiteCardBorder">#2196F3</color>
     <color name="whiteCardTextColour">#000000</color>
 </resources>

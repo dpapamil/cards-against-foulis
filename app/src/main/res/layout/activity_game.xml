@@ -38,8 +38,7 @@
 
         <Button
             android:id="@+id/start_game_btn2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/GameButton"
             android:text="@string/start_game"
             android:onClick="onStartGame"/>
     </LinearLayout>
@@ -59,8 +58,7 @@
 
         <Button
             android:id="@+id/join_game"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/GameButton"
             android:text="@string/join_game"
             android:onClick="onJoinGame"/>
     </LinearLayout>
@@ -109,7 +107,7 @@
             <TextView android:id="@+id/cur_black_card" style="@style/blackCardText" />
         </LinearLayout>
 
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" >
 
@@ -134,19 +132,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true">
+
                 <Button
                     android:id="@+id/choose_white_card"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:text="@string/choose_white_card"
-                    android:onClick="onChooseWhiteCard"/>
+                    style="@style/GameButton"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:onClick="onChooseWhiteCard"
+                    android:text="@string/choose_white_card" />
 
                 <Button
                     android:id="@+id/next_round"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
+                    style="@style/GameButton"
+                    android:layout_gravity="bottom|center_horizontal"
                     android:text="@string/next_black_card"
                     android:onClick="onGetNextRound"/>
             </LinearLayout>

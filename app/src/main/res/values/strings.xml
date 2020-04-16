@@ -20,7 +20,7 @@ limitations under the License. -->
     <string name="hint_card">Card…</string>
     <string name="white_cards">White Cards</string>
     <string name="black_cards">Black Cards</string>
-    <string name="load_cards">Load Cards from a spreadsheet</string>
+    <string name="load_cards">Load Cards</string>
     <string name="start_game">Start Game</string>
     <string name="join_game">Join Game</string>
     <string name="sign_in">Sign In</string>
