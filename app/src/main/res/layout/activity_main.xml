@@ -15,10 +15,15 @@
     <LinearLayout android:id="@+id/screen_sign_in" style="@style/LLScreen">
         <TextView style="@style/GameTitle" />
 
-        <Button android:id="@+id/button_sign_in"
-            style="@style/SignInButton"
-            android:text="@string/sign_in"
-            android:onClick="onSignIn"/>
+        <Button
+            android:id="@+id/button_sign_in"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/white_card_selected_back"
+            android:textColor="@color/blackCardTextColour"
+            android:onClick="onSignIn"
+            android:text="@string/sign_in" />
     </LinearLayout>
 
     <!-- MAIN SCREEN -->
@@ -65,15 +70,6 @@
             android:text="@string/start_game"
             android:onClick="onStartGame"/>
 
-    </LinearLayout>
-
-    <!-- INVITATION POPUP -->
-    <LinearLayout android:id="@+id/invitation_popup" style="@style/InvPopup">
-        <TextView android:id="@+id/incoming_invitation_text" style="@style/InvPopupText" />
-        <Button android:id="@+id/button_accept_popup_invitation"
-            style="@style/InvPopupButton"
-            android:text="@string/accept_popup_invite"
-            android:onClick="onAcceptInvitation"/>
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
