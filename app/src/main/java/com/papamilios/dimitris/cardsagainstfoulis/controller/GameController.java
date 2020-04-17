@@ -277,7 +277,6 @@ public class GameController {
     // Handler for receiving a white card
     public void onReceiveCard(String cardText) {
         mWhiteCards.add(new Card(0, cardText, true));
-        mGameState.setDisplayedCards(mWhiteCards);
     }
 
     // Handler for receiving the card a pleb has chosen
