@@ -61,7 +61,7 @@ public class GameState {
 
     // Accessors for the winner's name
     public String getWinnerName() { return mWinnerName; }
-    public void setWinnerName(@NonNull String winnerName) { mWinnerName = winnerName; }
+    public void setWinnerName(String winnerName) { mWinnerName = winnerName; }
 
     // Accessors for waiting for others
     public boolean waitingForOthers() { return mWaitingForOthers; }

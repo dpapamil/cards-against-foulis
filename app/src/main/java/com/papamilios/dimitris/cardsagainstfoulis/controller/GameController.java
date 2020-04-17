@@ -208,6 +208,15 @@ public class GameController {
         onReceiveChatMessage(chatMsg);
     }
 
+    // Swap all my cards and forfeit this round
+    public void swapCards() {
+        mWhiteCards.clear();
+        mMsgHandler.sendSwapCardsMsg();
+        showWaitOthersToChooseScreen();
+        onPlayerSwappingCards(getPlayer(mMyId));
+        updateView();
+    }
+
     // ---------------------- EVENTS --------------------------------------------
 
     // Handler for when we are about to start a new round

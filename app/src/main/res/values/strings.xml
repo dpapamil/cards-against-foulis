@@ -65,6 +65,7 @@ limitations under the License. -->
     <string name="waiting_for_czar">The mighty Czar is thinking...</string>
     <string name="choose_winner">What would Foulis choose?</string>
     <string name="winner_is">... and the winner is: \u0020</string>
+    <string name="noone">Foulis</string>
 
     <string name="players_left">The following players/assholes left the game: \u0020</string>
 
