@@ -17,6 +17,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.GameMessag
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.IMessageVisitor;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SendCardMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.StartRoundMessage;
+import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SwapCardsMessage;
 
 import java.util.List;
 
@@ -88,6 +89,11 @@ public class MessageHandler implements IMessageVisitor {
 
     public void sendChooseWinnerMsg(String cardText) {
         GameMessage msg = ChooseWinnerMessage.create(cardText);
+        sendMsgToAll(msg);
+    }
+
+    public void sendSwapCardsMsg() {
+        SwapCardsMessage msg = SwapCardsMessage.create();
         sendMsgToAll(msg);
     }
 

@@ -12,4 +12,5 @@ public interface IMessageVisitor {
     public void visit(AskCardMessage msg);
     public void visit(SendCardMessage msg);
     public void visit(ChatMessage msg);
+    public void visit(SwapCardsMessage msg);
 }
