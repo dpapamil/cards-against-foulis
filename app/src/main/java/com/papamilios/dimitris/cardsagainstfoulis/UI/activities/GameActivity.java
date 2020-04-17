@@ -330,6 +330,11 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    // Handler for swapping all white cards we hold currently
+    public void onSwapCards(View view) {
+        mController.swapCards();
+    }
+
     // Handler for closing the room event popup
     public void onCloseRoomEventPopup(View view) {
         showView(R.id.room_event_popup, false);
@@ -697,6 +702,15 @@ public class GameActivity extends AppCompatActivity {
         showView(R.id.choose_white_card, show);
     }
 
+    // Show the swap cards button
+    public void showSwapCards(boolean show) {
+        View view = findViewById(R.id.swap_cards);
+        if (view == null) {
+            return;
+        }
+        view.setVisibility(show? View.VISIBLE : View.INVISIBLE);
+    }
+
     // Show the white cards
     public void showWhiteCards(boolean show) {
         showView(R.id.white_cards, show);
@@ -824,6 +838,7 @@ public class GameActivity extends AppCompatActivity {
         boolean showChoices = !isCzar && !waiting;
         showWhiteCards(showChoices);
         showChooseCard(showChoices);
+        showSwapCards(showChoices);
         showWaitForOthers(waiting);
 
         // Show the message above the black card
@@ -851,6 +866,7 @@ public class GameActivity extends AppCompatActivity {
 
         showNextRoundButton(false);
         showScoreboard(false);
+        showSwapCards(false);
 
         // Show the black card
         updateBlackCardView(gameState.getBlackCard().getText());
@@ -875,12 +891,15 @@ public class GameActivity extends AppCompatActivity {
             throw new AssertionError("Wrong phase");
         }
 
+        boolean hasWinner = gameState.getWinnerName() != null;
+
         // Hide the choose button
         showChooseCard(false);
+        showSwapCards(false);
         // Show the next round button only if haven't pressed it already
         showNextRoundButton(!gameState.waitingForOthers());
         // Show the cards and the scoreboard
-        showWhiteCards(true);
+        showWhiteCards(hasWinner);
 
         // Update the scoreboard before we show it
         String scores = "";
@@ -892,16 +911,20 @@ public class GameActivity extends AppCompatActivity {
 
         // Show the black card
         updateBlackCardView(gameState.getBlackCard().getText());
-        // Show the cards we are supposed to display
-        updateWhiteCardsView(gameState.getDisplayedCards());
+        if (hasWinner) {
+            // Show the cards we are supposed to display
+            updateWhiteCardsView(gameState.getDisplayedCards());
+        }
         // Select only the winning card and disable selection
         clearWhiteCardsSelection();
-        setWhiteCardsSelection(gameState.getNumMaxSelection(), false);
-        selectWhiteCard(gameState.getSelectedCards().get(0).getText());
-
+        if (hasWinner) {
+            setWhiteCardsSelection(gameState.getNumMaxSelection(), false);
+            selectWhiteCard(gameState.getSelectedCards().get(0).getText());
+        }
         showWaitForOthers(gameState.waitingForOthers());
 
-        showMsgAboveBlackCard(true, getResourceString(R.string.winner_is), gameState.getWinnerName());
+        String winnerName = hasWinner ? gameState.getWinnerName() : getResourceString(R.string.noone);
+        showMsgAboveBlackCard(true, getResourceString(R.string.winner_is), winnerName);
     }
 
     /*

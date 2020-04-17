@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
+import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SwapCardsMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public class GameController {
     private List<String> mReadyForNextRound = new ArrayList<String>();
 
     private List<GamePlayer> mPlayers = new ArrayList<GamePlayer>();
+    private List<GamePlayer> mRoundPlayers = new ArrayList<GamePlayer>();
 
     private String mHostId = null;
 
@@ -206,6 +208,15 @@ public class GameController {
         onReceiveChatMessage(chatMsg);
     }
 
+    // Swap all my cards and forfeit this round
+    public void swapCards() {
+        mWhiteCards.clear();
+        mMsgHandler.sendSwapCardsMsg();
+        showWaitOthersToChooseScreen();
+        onPlayerSwappingCards(getPlayer(mMyId));
+        updateView();
+    }
+
     // ---------------------- EVENTS --------------------------------------------
 
     // Handler for when we are about to start a new round
@@ -213,7 +224,9 @@ public class GameController {
         // Clear the answers
         mPlebsCards.clear();
         // Clear the next round list
-
+        mRoundPlayers.clear();
+        mRoundPlayers.addAll(mPlayers);
+        mRoundPlayers.remove(getPlayer(czarId));
         mReadyForNextRound.clear();
         mCurBlackCard.setText(blackCardText);
         mCurCzarId = czarId;
@@ -243,7 +256,7 @@ public class GameController {
         if (mReadyForNextRound.size() == mPlayers.size()) {
             // Send new cards to all players except the czar
             int numCardsToAdd = getNumOfAnswers();
-            for (GamePlayer player : getMortalEnemiesOf(mCurCzarId)) {
+            for (GamePlayer player : mRoundPlayers) {
                 int numCardsToSend = numCardsToAdd;
                 while(numCardsToSend > 0) {
                     if (player.getId().equals(mMyId)) {
@@ -274,11 +287,8 @@ public class GameController {
         }
 
         mPlebsCards.put(plebId, cardText);
-        if (mPlebsCards.size() == mPlayers.size() - 1) {
-            mGameState.setRoundPhase(RoundPhase.CHOOSING_WINNER_CARD);
-            showCzarChoosingWinnerScreen();
-            mGameActivity.update(mGameState);
-        }
+
+        goToChoosingWinnerPhase();
     }
 
     // Handler for receiving the winning card
@@ -304,12 +314,29 @@ public class GameController {
         updateView();
     }
 
+    public void onPlayerSwappingCards(@NonNull GamePlayer player) {
+        mRoundPlayers.remove(player);
+        replaceCards(player);
+
+        if (mRoundPlayers.isEmpty()) {
+            goToWinnerPhase();
+        } else {
+            // Check if we have all answers and go to the next phase if we did
+            goToChoosingWinnerPhase();
+        }
+    }
+
     // Called when we receive a chat message
     public void onReceiveChatMessage(@NonNull ChatMessage chatMsg) {
         if (chatMsg.getSenderName() == null) {
             chatMsg.setSenderName(getPlayer(chatMsg.senderId()).getName());
         }
         mGameActivity.addChatMessage(chatMsg);
+    }
+
+    public void onReceiveSwapCardsMessage(@NonNull SwapCardsMessage msg) {
+        GamePlayer strandedPlayer = getPlayer(msg.senderId());
+        onPlayerSwappingCards(strandedPlayer);
     }
 
     // Called when players have left the game
@@ -336,6 +363,50 @@ public class GameController {
         mGameState.clearCardSelection();
         mGameState.setIsCzar(isCzar());
         mGameState.setmNumMaxSelections(getNumOfAnswers());
+    }
+
+    // Replace all game cards for the given player
+    // Only for the host
+    private void replaceCards(@NonNull GamePlayer player) {
+        if (!isHost()) {
+            return;
+        }
+
+        if (player.getId().equals(mHostId)) {
+            mWhiteCards.clear();
+            for (int i = 0; i < 10; i++) {
+                mWhiteCards.add(mCardProvider.getNextWhiteCard());
+            }
+        } else {
+            for (int i = 0; i < 10; i++) {
+                sendCard(player);
+            }
+        }
+    }
+
+    // This will check if we're ready to move onto the second phase
+    // of the round, which is the choosing the winner card phase
+    private void goToChoosingWinnerPhase() {
+        if (mPlebsCards.size() > mRoundPlayers.size()) {
+            throw new AssertionError("How can we have more cards than round players?");
+        }
+        // Only go to the next phase, if we have received answers from all players
+        if (mPlebsCards.size() < mRoundPlayers.size()) {
+            return;
+        }
+
+        mGameState.setRoundPhase(RoundPhase.CHOOSING_WINNER_CARD);
+        showCzarChoosingWinnerScreen();
+        mGameActivity.update(mGameState);
+    }
+
+    private void goToWinnerPhase() {
+        mGameState.setRoundPhase(RoundPhase.WINNER);
+        List<Card> empty = new ArrayList<Card>();
+        mGameState.setDisplayedCards(empty);
+        mGameState.setWinnerName(null);
+        mGameState.setWaitingForOthers(false);
+        updateView();
     }
 
     private void showWaitOthersToChooseScreen() {

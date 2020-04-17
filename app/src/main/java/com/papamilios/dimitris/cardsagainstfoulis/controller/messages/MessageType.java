@@ -14,7 +14,8 @@ public enum MessageType {
     END_ROUND(3),
     SEND_CARD(4),
     ASK_CARD(5),
-    CHAT(6);
+    CHAT(6),
+    SWAP_CARDS(7);
 
     private final int mValue;
 

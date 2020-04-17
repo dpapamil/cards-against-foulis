@@ -18,11 +18,11 @@ public class CardProvider {
 
     // The black cards
     private List<Card> mBlackCards;
-    private int mCurBlackCardPos = 0;
+    private int mCurBlackCardPos = -1;
 
     // The white cards
     private List<Card> mWhiteCards;
-    private int mCurWhiteCardPos = 0;
+    private int mCurWhiteCardPos = -1;
 
     // Constructor
     public CardProvider(AppCompatActivity activity) {
@@ -45,12 +45,20 @@ public class CardProvider {
 
     // Get the next white card
     public Card getNextWhiteCard() {
+        if (mCurWhiteCardPos == mWhiteCards.size() - 1) {
+            mWhiteCards = randomizeCards(mWhiteCards);
+            mCurWhiteCardPos = -1;
+        }
         mCurWhiteCardPos = getNextCardPosition(mCurWhiteCardPos, mWhiteCards.size());
         return mWhiteCards.get(mCurWhiteCardPos);
     }
 
     // Get the next black card
     public Card getNextBlackCard() {
+        if (mCurBlackCardPos == mBlackCards.size() - 1) {
+            mBlackCards = randomizeCards(mBlackCards);
+            mCurBlackCardPos = -1;
+        }
         mCurBlackCardPos = getNextCardPosition(mCurBlackCardPos, mBlackCards.size());
         return mBlackCards.get(mCurBlackCardPos);
     }
