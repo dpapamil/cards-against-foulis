@@ -90,16 +90,13 @@
 
             <TextView
                 android:id="@+id/above_card_msg"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/standardMessage"
                 android:text="@string/wait_for_others"/>
 
             <TextView
                 android:id="@+id/above_card_important"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/wait_for_others"
-                android:textStyle="bold" />
+                style="@style/standardMessage"
+                android:textStyle="bold"/>
 
         </LinearLayout>
 

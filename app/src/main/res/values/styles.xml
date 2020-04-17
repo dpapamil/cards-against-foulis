@@ -39,7 +39,7 @@ limitations under the License. -->
 
     <!-- The default font for RecyclerView items is too small.
     The margin is a simple delimiter between the words. -->
-    <style name="card_title">
+    <style name="cardTitle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">26dp</item>
         <item name="android:textSize">20sp</item>
@@ -48,6 +48,15 @@ limitations under the License. -->
         <item name="android:paddingLeft">8dp</item>
         <item name="android:paddingRight">8dp</item>
     </style>
+
+    <style name="standardMessage">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
+    </style>
+
 
     <dimen name="TitleSize">30sp</dimen>
 
@@ -79,9 +88,7 @@ limitations under the License. -->
         <item name="android:orientation">horizontal</item>
     </style>
 
-    <style name="Blurb">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
+    <style name="Blurb" parent="@style/standardMessage">
         <item name="android:textColor">@color/BlurbColor</item>
     </style>
 

@@ -61,7 +61,7 @@ limitations under the License. -->
     <string name="game_problem">An error occurred while starting the game. Please try again.</string>
 
     <string name="current_czar">All hail your current Czar: \u0020</string>
-    <string name="waiting_for_plebs">Oh mighty Czar wait for the plebs to choose...</string>
+    <string name="waiting_for_plebs">Waiting for stupid plebs...</string>
     <string name="waiting_for_czar">The mighty Czar is thinking...</string>
     <string name="choose_winner">What would Foulis choose?</string>
     <string name="winner_is">... and the winner is: \u0020</string>
