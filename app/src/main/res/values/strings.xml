@@ -42,9 +42,13 @@ limitations under the License. -->
 
     <string name="created_game">Created game ID</string>
     <string name="waiting_players_join">Waiting for players to join</string>
-    <string name="joined_players">Players that joined</string>
+    <string name="joined_players">Players that joined: \u0020</string>
 
     <string name="game_id">Give us the game ID, you fool(is)</string>
+
+    <string name="created_by">Created by: \u0020</string>
+    <string name="host_name">host</string>
+    <string name="time">Time: \u0020</string>
 
     <string name="next_black_card">Next Round</string>
     <string name="choose_white_card">Choose Card</string>
