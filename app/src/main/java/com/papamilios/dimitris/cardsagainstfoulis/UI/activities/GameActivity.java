@@ -2,13 +2,10 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -40,14 +37,20 @@ import com.papamilios.dimitris.cardsagainstfoulis.UI.CardListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.CardViewModel;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.OnSwipeTouchListener;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.chat.ChatMessageListAdapter;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.games.GameInfo;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.games.GamesListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GamePlayer;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameState;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.RoundPhase;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
+import com.papamilios.dimitris.cardsagainstfoulis.database.FirebaseUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -88,6 +91,9 @@ public class GameActivity extends AppCompatActivity {
     private CardViewModel mCardViewModel = null;
     private CardListAdapter mCardsAdapter = null;
 
+    // The games list adapter
+    private GamesListAdapter mGamesListAdapter = null;
+
     // Chat messages
     private ChatMessageListAdapter mChatMessageAdapter = null;
     private boolean mInChat = false;
@@ -99,9 +105,11 @@ public class GameActivity extends AppCompatActivity {
             // Get the users
             String joinedUsers = "";
             List<GamePlayer> players = new ArrayList<GamePlayer>();
+            List<String> playersNames = new ArrayList<String>();
             for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
                 String userName = userSnapshot.child("name").getValue().toString();
                 joinedUsers += userName + "\n";
+                playersNames.add(userName);
                 players.add(new GamePlayer(userSnapshot.getKey(), userName));
             }
 
@@ -123,10 +131,11 @@ public class GameActivity extends AppCompatActivity {
                 }
             } else {
                 mController.setPlayers(players);
-                int viewId = mJoining ? R.id.current_players : R.id.joined_players;
-                TextView usersText = (TextView) findViewById(viewId);
-                usersText.setText("");
-                setTextToView(viewId, joinedUsers);
+                if (mJoining) {
+                    mGamesListAdapter.updateGamePlayers(mGameId, playersNames);
+                } else {
+                    setTextToView(R.id.joined_players, joinedUsers);
+                }
             }
         }
 
@@ -136,6 +145,8 @@ public class GameActivity extends AppCompatActivity {
             Log.w(TAG, "loadUsers:onCancelled", databaseError.toException());
         }
     };
+
+    private ValueEventListener mGamesListener = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -160,6 +171,11 @@ public class GameActivity extends AppCompatActivity {
         LinearLayoutManager chatLayoutManager = new LinearLayoutManager(this);
         chatLayoutManager.setStackFromEnd(true);
         recyclerChatView.setLayoutManager(chatLayoutManager);
+
+        RecyclerView recyclerGamesView = findViewById(R.id.games_to_join);
+        mGamesListAdapter = new GamesListAdapter(this);
+        recyclerGamesView.setAdapter(mGamesListAdapter);
+        recyclerGamesView.setLayoutManager(new LinearLayoutManager(this));
 
         mController = new GameController(this);
 
@@ -286,6 +302,7 @@ public class GameActivity extends AppCompatActivity {
                             DatabaseReference gameRef = FirebaseDatabase.getInstance().getReference().child("games").child(mGameId);
                             DatabaseReference userRef = gameRef.child("users/" + mController.getMyId());
                             userRef.removeValue();
+                            mGameId = null;
                         }
                         GameActivity.super.onBackPressed();
                     }
@@ -369,15 +386,17 @@ public class GameActivity extends AppCompatActivity {
 
     public void onJoinGame(View view) {
 
-        EditText gameIdTextView = (EditText) findViewById(R.id.game_id_edit);
-        mGameId = gameIdTextView.getText().toString();
+        GameInfo selectedGame = mGamesListAdapter.getSelectedGame();
+        if (selectedGame == null) {
+            return;
+        }
+        FirebaseDatabase.getInstance().getReference().child("games").removeEventListener(mGamesListener);
 
-        showView(R.id.game_id_prompt, false);
-        showView(R.id.game_id_edit, false);
+        mGameId = selectedGame.getId();
         showView(R.id.join_game, false);
-        showView(R.id.players_joined, true);
-        showView(R.id.waiting_players_join, true);
-        showView(R.id.current_players, true);
+        mGamesListAdapter.setGames(Arrays.asList(selectedGame));
+        mGamesListAdapter.setSelected(mGameId);
+        mGamesListAdapter.enableSelection(false);
 
         // Add the user to the game object
         DatabaseReference gameRef = FirebaseDatabase.getInstance().getReference().child("games").child(mGameId);
@@ -385,20 +404,10 @@ public class GameActivity extends AppCompatActivity {
         String userId = mFirebaseAuth.getCurrentUser().getUid();
         mController.setMyId(userId);
 
-        ValueEventListener hostListener = new ValueEventListener() {
-          @Override
-          public void onDataChange(DataSnapshot dataSnapshot) {
-              // Get the host
-              mController.setHostId(dataSnapshot.getValue().toString());
-          }
-
-          @Override
-          public void onCancelled(DatabaseError databaseError) {
-              // Getting Post failed, log a message
-              Log.w(TAG, "hostLoad:onCancelled", databaseError.toException());
-          }
-        };
-        gameRef.child("host").addListenerForSingleValueEvent(hostListener);
+        FirebaseUtils.getData(gameRef.child("host/id"), (data) -> {
+            // Get the host
+            mController.setHostId(data.getValue().toString());
+        });
 
         gameRef.child("users").addValueEventListener(mUsersListener);
 
@@ -436,10 +445,13 @@ public class GameActivity extends AppCompatActivity {
         DatabaseReference gameRef = gamesRef.push();
         mGameId = gameRef.getKey();
         String userId = mFirebaseAuth.getCurrentUser().getUid();
-        gameRef.child("users").child(userId).child("name").setValue(mFirebaseAuth.getCurrentUser().getDisplayName());
-        gameRef.child("host").setValue(userId);
-        gameRef.child("started").setValue(false);
-
+        HashMap<String, Object> gameInformation = new HashMap<String, Object>();
+        gameInformation.put("users/" + userId + "/name", mFirebaseAuth.getCurrentUser().getDisplayName());
+        gameInformation.put("host/id", userId);
+        gameInformation.put("host/displayName", mFirebaseAuth.getCurrentUser().getDisplayName());
+        gameInformation.put("started", false);
+        gameInformation.put("created", new Date());
+        gameRef.updateChildren(gameInformation);
         mController.setHostId(userId);
         mController.setMyId(userId);
 
@@ -453,53 +465,52 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void joinGame() {
-        switchToScreen(R.id.screen_join_game);
-        showView(R.id.players_joined, false);
-        showView(R.id.waiting_players_join, false);
 
-        if (mJoinGameBtn == null) {
-            mJoinGameBtn = findViewById(R.id.join_game);
-        }
-        mJoinGameBtn.setEnabled(false);
+//        if (mJoinGameBtn == null) {
+//            mJoinGameBtn = findViewById(R.id.join_game);
+//        }
+//        mJoinGameBtn.setEnabled(true);
 
-        EditText gameIdTextView = (EditText) findViewById(R.id.game_id_edit);
-        gameIdTextView.addTextChangedListener(new TextWatcher() {
 
+        DatabaseReference gamesRef = FirebaseDatabase.getInstance().getReference().child("games");
+        mGamesListener = new ValueEventListener() {
             @Override
-            public void afterTextChanged(Editable s) {}
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start,
-                                          int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start,
-                                      int before, int count) {
-                if(s.length() == 0) {
-                    mJoinGameBtn.setEnabled(false);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (mGameId != null) {
                     return;
                 }
-
-                DatabaseReference gamesRef = FirebaseDatabase.getInstance().getReference().child("games");
-                final String gameId = s.toString();
-                ValueEventListener gamesListener = new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        boolean allowJoin = dataSnapshot.hasChild(gameId) &&
-                                            dataSnapshot.child(gameId + "/started").getValue().equals(false);
-                        mJoinGameBtn.setEnabled(allowJoin);
+                List<GameInfo> availableGames = new ArrayList<GameInfo>();
+                for (DataSnapshot game : dataSnapshot.getChildren()) {
+                    if (game.child("started").getValue().equals(true)) {
+                        continue;
                     }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        // Getting Post failed, log a message
-                        Log.w(TAG, "hostLoad:onCancelled", databaseError.toException());
+                    String gameId = game.getKey();
+                    String hostId = game.child("host/id").getValue().toString();
+                    String hostName = game.child("host/displayName").getValue().toString();
+                    Date dateCreated = game.child("created").getValue(Date.class);
+                    List<String> currentPlayers = new ArrayList<String>();
+                    for (DataSnapshot user : game.child("users").getChildren()) {
+                        String userName = user.child("name").getValue().toString();
+                        currentPlayers.add(userName);
                     }
-                };
-                gamesRef.addListenerForSingleValueEvent(gamesListener);
+                    GameInfo gameInfo = new GameInfo(gameId, hostName, dateCreated);
+                    gameInfo.setPlayers(currentPlayers);
+                    availableGames.add(gameInfo);
+                }
+                mGamesListAdapter.setGames(availableGames);
+
+                switchToScreen(R.id.screen_join_game);
+                findViewById(R.id.join_game).setEnabled(mGamesListAdapter.getItemCount() > 0);
             }
-        });
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "hostLoad:onCancelled", databaseError.toException());
+            }
+        };
+        gamesRef.addValueEventListener(mGamesListener);
     }
 
     public void addChatMessage(@NonNull ChatMessage chatMsg) {
