@@ -39,6 +39,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.UI.OnSwipeTouchListener;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.chat.ChatMessageListAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.games.GameInfo;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.games.GamesListAdapter;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.scoreBoard.ScoreBoardAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameController;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GamePlayer;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GameState;
@@ -90,6 +91,7 @@ public class GameActivity extends AppCompatActivity {
     // The white card view model
     private CardViewModel mCardViewModel = null;
     private CardListAdapter mCardsAdapter = null;
+    private ScoreBoardAdapter mScoreBoardAdapter = null;
 
     // The games list adapter
     private GamesListAdapter mGamesListAdapter = null;
@@ -177,7 +179,13 @@ public class GameActivity extends AppCompatActivity {
         recyclerGamesView.setAdapter(mGamesListAdapter);
         recyclerGamesView.setLayoutManager(new LinearLayoutManager(this));
 
+        RecyclerView recyclerScoreBoardView = findViewById(R.id.score_board);
+        mScoreBoardAdapter = new ScoreBoardAdapter(this);
+        recyclerScoreBoardView.setAdapter(mScoreBoardAdapter);
+        recyclerScoreBoardView.setLayoutManager(new LinearLayoutManager(this));
+
         mController = new GameController(this);
+        mController.setScoreBoardAdapter(mScoreBoardAdapter);
 
         // Create the client used to sign in.
         GoogleSignInOptions gso = new GoogleSignInOptions
@@ -733,9 +741,9 @@ public class GameActivity extends AppCompatActivity {
     }
 
     // Update the text of the scoreboard
-    public void updateScoreboard(@NonNull String scoresText) {
-        ((TextView)findViewById(R.id.score_board)).setText(scoresText);
-    }
+//    public void updateScoreboard(@NonNull String scoresText) {
+//        ((TextView)findViewById(R.id.score_board)).setText(scoresText);
+//    }
 
     // Show the scoreboard
     public void showScoreboard(boolean show) {
@@ -917,7 +925,7 @@ public class GameActivity extends AppCompatActivity {
         for (Map.Entry<String, Integer> entry : gameState.getScoreboard().entrySet()) {
             scores += entry.getKey() + ": " + entry.getValue() + "\n";
         }
-        updateScoreboard(scores);
+        //updateScoreboard(scores);
         showScoreboard(true);
 
         // Show the black card

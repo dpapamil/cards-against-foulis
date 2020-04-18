@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.scoreBoard.ScoreBoardAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SwapCardsMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
@@ -53,6 +54,7 @@ public class GameController {
 
     // The scoreboard
     private Map<String, Integer> mScoreboard;
+    private ScoreBoardAdapter mScoreBoardAdapter = null;
 
     // The list of user IDs that are ready for starting the next round
     private List<String> mReadyForNextRound = new ArrayList<String>();
@@ -77,9 +79,16 @@ public class GameController {
         mScoreboard = new HashMap<String, Integer>();
     }
 
+    public void setScoreBoardAdapter(@NonNull ScoreBoardAdapter adapter) {
+        mScoreBoardAdapter = adapter;
+    }
+
     public String getMyId() { return mMyId; }
 
-    public void setPlayers(@NonNull List<GamePlayer> players) { mPlayers = players; }
+    public void setPlayers(@NonNull List<GamePlayer> players) {
+        mPlayers = players;
+        mScoreBoardAdapter.initialiseScoreBoard(mPlayers);
+    }
     public List<GamePlayer> getPlayers() { return mPlayers; }
     public void setHostId(@NonNull String id) { mHostId = id; }
 
@@ -298,7 +307,9 @@ public class GameController {
                 // This is the winner. Increase his score
                 winnerId = pair.getKey();
                 mScoreboard.put(pair.getKey(), mScoreboard.get(pair.getKey()) + 1);
-                mGameState.increaseScore(getPlayer(winnerId).getName());
+                GamePlayer winner = getPlayer(winnerId);
+                mGameState.increaseScore(winner.getName());
+                mScoreBoardAdapter.increasePlayerScore(winner);
                 break;
             }
         }
