@@ -50,6 +50,7 @@ import com.papamilios.dimitris.cardsagainstfoulis.database.FirebaseUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -444,12 +445,13 @@ public class GameActivity extends AppCompatActivity {
         DatabaseReference gameRef = gamesRef.push();
         mGameId = gameRef.getKey();
         String userId = mFirebaseAuth.getCurrentUser().getUid();
-        gameRef.child("users").child(userId).child("name").setValue(mFirebaseAuth.getCurrentUser().getDisplayName());
-        gameRef.child("host/id").setValue(userId);
-        gameRef.child("host/displayName").setValue(mFirebaseAuth.getCurrentUser().getDisplayName());
-        gameRef.child("started").setValue(false);
-        gameRef.child("created").setValue(new Date());
-
+        HashMap<String, Object> gameInformation = new HashMap<String, Object>();
+        gameInformation.put("users/" + userId + "/name", mFirebaseAuth.getCurrentUser().getDisplayName());
+        gameInformation.put("host/id", userId);
+        gameInformation.put("host/displayName", mFirebaseAuth.getCurrentUser().getDisplayName());
+        gameInformation.put("started", false);
+        gameInformation.put("created", new Date());
+        gameRef.updateChildren(gameInformation);
         mController.setHostId(userId);
         mController.setMyId(userId);
 
