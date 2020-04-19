@@ -185,7 +185,6 @@ public class GameActivity extends AppCompatActivity {
         recyclerScoreBoardView.setLayoutManager(new LinearLayoutManager(this));
 
         mController = new GameController(this);
-        mController.setScoreBoardAdapter(mScoreBoardAdapter);
 
         // Create the client used to sign in.
         GoogleSignInOptions gso = new GoogleSignInOptions
