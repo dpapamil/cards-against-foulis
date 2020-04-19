@@ -43,7 +43,8 @@ public class ScoreBoardAdapter extends RecyclerView.Adapter<ScoreViewHolder> {
         GamePlayer player = mScoreBoard.getPlayer(position);
         Integer score = mScoreBoard.getScore(position);
         holder.setScore(player.getName(), score);
-        holder.setFontSize(position);
+        int offset = mScoreBoard.getScore(0).intValue() - score.intValue();
+        holder.setFontSize(offset);
     }
 
     public void initialiseScoreBoard(List<GamePlayer> gamePlayers) {
@@ -57,7 +58,6 @@ public class ScoreBoardAdapter extends RecyclerView.Adapter<ScoreViewHolder> {
         }
         // For every current player, find out if they've changed position
         Map<Integer, Integer> movements = new HashMap<Integer, Integer>();
-        Set<Integer> changedIndices = new HashSet<Integer>();
         int pos = 0;
         while (pos < mScoreBoard.playerCount()) {
             String playerName = updatedScoreBoard.getPlayer(pos).getName();
@@ -66,15 +66,9 @@ public class ScoreBoardAdapter extends RecyclerView.Adapter<ScoreViewHolder> {
                 if (pos > oldPos) {
                     throw new AssertionError("Only one way iteration");
                 }
-                for (int i = pos; i <= oldPos; i++) {
-                    changedIndices.add(i);
-                }
                 movements.put(oldPos, pos);
                 pos = oldPos + 1;
             } else {
-                if (mScoreBoard.getScore(pos) != updatedScoreBoard.getScore(pos)) {
-                    changedIndices.add(pos);
-                }
                 pos++;
             }
         }
@@ -87,9 +81,7 @@ public class ScoreBoardAdapter extends RecyclerView.Adapter<ScoreViewHolder> {
             notifyItemMoved(oldPos, newPos);
         }
 
-        for (Integer changedIndex : changedIndices) {
-            notifyItemChanged(changedIndex.intValue());
-        }
+        notifyItemRangeChanged(0, mScoreBoard.playerCount());
     }
 
     @Override

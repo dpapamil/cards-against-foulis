@@ -17,8 +17,8 @@ public class ScoreViewHolder extends RecyclerView.ViewHolder {
     private TextView mNameView = null;
     private TextView mScoreView = null;
 
-    private final int sFontSize = 24;
-    private final int sMinFontSize = 12;
+    private final int sFontSize = 22;
+    private final int sMinFontSize = 10;
 
     public ScoreViewHolder(View itemView) {
         super(itemView);
@@ -32,8 +32,8 @@ public class ScoreViewHolder extends RecyclerView.ViewHolder {
         mScoreView.setText(score.toString());
     }
 
-    public void setFontSize(int position) {
-        int fontSize = max(sFontSize - position * 3, sMinFontSize);
+    public void setFontSize(int offset) {
+        int fontSize = max(sFontSize - (2 * offset), sMinFontSize);
         mNameView.setTextSize(fontSize);
         mScoreView.setTextSize(fontSize);
     }
