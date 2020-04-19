@@ -52,9 +52,6 @@ public class GameController {
     // The answers of all plebs
     private Map<String, String> mPlebsCards;
 
-    // The scoreboard
-    private ScoreBoardAdapter mScoreBoardAdapter = null;
-
     // The list of user IDs that are ready for starting the next round
     private List<String> mReadyForNextRound = new ArrayList<String>();
 
@@ -77,15 +74,10 @@ public class GameController {
         mCurBlackCard = new Card(0, "", false);
     }
 
-    public void setScoreBoardAdapter(@NonNull ScoreBoardAdapter adapter) {
-        mScoreBoardAdapter = adapter;
-    }
-
     public String getMyId() { return mMyId; }
 
     public void setPlayers(@NonNull List<GamePlayer> players) {
         mPlayers = players;
-        mScoreBoardAdapter.initialiseScoreBoard(mPlayers);
     }
     public List<GamePlayer> getPlayers() { return mPlayers; }
     public void setHostId(@NonNull String id) { mHostId = id; }
