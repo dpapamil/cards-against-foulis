@@ -388,6 +388,7 @@ public class GameActivity extends AppCompatActivity {
         DatabaseReference gameRef = database.getReference("games").child(mGameId);
         gameRef.child("started").setValue(true);
         mGameStarted = true;
+        mScoreBoardAdapter.initialiseScoreBoard(mController.getPlayers());
         mController.startGame(mGameId);
     }
 
@@ -427,6 +428,7 @@ public class GameActivity extends AppCompatActivity {
                     switchToMainScreen();
                     keepScreenOn();
                     mGameStarted = true;
+                    mScoreBoardAdapter.initialiseScoreBoard(mController.getPlayers());
                     mController.startGame(mGameId);
                 }
             }
