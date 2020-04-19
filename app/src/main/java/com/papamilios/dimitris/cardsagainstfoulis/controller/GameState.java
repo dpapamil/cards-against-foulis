@@ -4,6 +4,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
  * Copyright (C) 2020 Cards Against Foulis Co.
  */
 
+import com.papamilios.dimitris.cardsagainstfoulis.UI.scoreBoard.ScoreBoard;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class GameState {
     private Card mBlackCard = null;
 
     // The score board
-    private Map<String, Integer> mScoreboard = new HashMap<String, Integer>();
+    private ScoreBoard mScoreBoard = new ScoreBoard();
 
 
 
@@ -100,21 +101,15 @@ public class GameState {
     public void setBlackCard(@NonNull Card card) { mBlackCard = card; }
 
     // Accessors for scoreboard
-    public Map<String, Integer> getScoreboard() { return mScoreboard; }
+    public ScoreBoard getScoreboard() { return mScoreBoard; }
     // Increase the score of the given user.
     public void increaseScore(@NonNull String userName) {
-        if (!mScoreboard.containsKey(userName)) {
-            return;
-        }
-
-        mScoreboard.put(userName, mScoreboard.get(userName) + 1);
+        GamePlayer player = mScoreBoard.getPlayer(mScoreBoard.getPlayerPosition(userName));
+        mScoreBoard.increasePlayerScore(player);
     }
 
     // Initialise scoreboard
-    public void initialiseScoreboard(@NonNull List<String> userNames) {
-        mScoreboard.clear();
-        for (String userName : userNames) {
-            mScoreboard.put(userName, 0);
-        }
+    public void initialiseScoreboard(@NonNull List<GamePlayer> players) {
+        mScoreBoard.initialiseBoard(players);
     }
 }

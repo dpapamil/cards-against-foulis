@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.activities.GameActivity;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.scoreBoard.ScoreBoardAdapter;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.ChatMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.messages.SwapCardsMessage;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
@@ -51,9 +52,6 @@ public class GameController {
     // The answers of all plebs
     private Map<String, String> mPlebsCards;
 
-    // The scoreboard
-    private Map<String, Integer> mScoreboard;
-
     // The list of user IDs that are ready for starting the next round
     private List<String> mReadyForNextRound = new ArrayList<String>();
 
@@ -74,12 +72,13 @@ public class GameController {
         mWhiteCards = new ArrayList<Card>();
         mPlebsCards = new HashMap<String, String>();
         mCurBlackCard = new Card(0, "", false);
-        mScoreboard = new HashMap<String, Integer>();
     }
 
     public String getMyId() { return mMyId; }
 
-    public void setPlayers(@NonNull List<GamePlayer> players) { mPlayers = players; }
+    public void setPlayers(@NonNull List<GamePlayer> players) {
+        mPlayers = players;
+    }
     public List<GamePlayer> getPlayers() { return mPlayers; }
     public void setHostId(@NonNull String id) { mHostId = id; }
 
@@ -90,11 +89,7 @@ public class GameController {
         mMsgReceiver.startListening(mMyId);
 
         List<String> userNames = new ArrayList<String>();
-        for (GamePlayer p : mPlayers) {
-            mScoreboard.put(p.getId(), 0);
-            userNames.add(p.getName());
-        }
-        mGameState.initialiseScoreboard(userNames);
+        mGameState.initialiseScoreboard(mPlayers);
 
         getNextCzar();
         sendInitialWhiteCards();
@@ -297,8 +292,8 @@ public class GameController {
             if (cardText.equals(pair.getValue())) {
                 // This is the winner. Increase his score
                 winnerId = pair.getKey();
-                mScoreboard.put(pair.getKey(), mScoreboard.get(pair.getKey()) + 1);
-                mGameState.increaseScore(getPlayer(winnerId).getName());
+                GamePlayer winner = getPlayer(winnerId);
+                mGameState.increaseScore(winner.getName());
                 break;
             }
         }
