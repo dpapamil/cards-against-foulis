@@ -202,7 +202,7 @@ public class GameActivity extends AppCompatActivity {
         mJoining = intent.getBooleanExtra(MainActivity.JOINING, false);
 
         // Hide chat
-        findViewById(R.id.got_message).setVisibility(View.INVISIBLE);
+        showPreservingView(R.id.got_message, false);
         showView(R.id.in_app_chat, false);
 
         OnSwipeTouchListener swipeListener = new OnSwipeTouchListener(getApplicationContext()) {
@@ -230,7 +230,7 @@ public class GameActivity extends AppCompatActivity {
         }
 
         mInChat = true;
-        findViewById(R.id.got_message).setVisibility(View.INVISIBLE);
+        showPreservingView(R.id.got_message, false);
         View view = findViewById(R.id.in_app_chat);
         view.setVisibility(View.VISIBLE);
         TranslateAnimation animate = new TranslateAnimation(
@@ -523,7 +523,7 @@ public class GameActivity extends AppCompatActivity {
 
     public void addChatMessage(@NonNull ChatMessage chatMsg) {
         mChatMessageAdapter.addMessage(chatMsg);
-        findViewById(R.id.got_message).setVisibility(mInChat ? View.INVISIBLE : View.VISIBLE);
+        showPreservingView(R.id.got_message, !mInChat);
         RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
         recyclerChatView.smoothScrollToPosition(mChatMessageAdapter.getItemCount() - 1);
     }
@@ -722,12 +722,8 @@ public class GameActivity extends AppCompatActivity {
     }
 
     // Show the swap cards button
-    public void showSwapCards(boolean show) {
-        View view = findViewById(R.id.swap_cards);
-        if (view == null) {
-            return;
-        }
-        view.setVisibility(show? View.VISIBLE : View.INVISIBLE);
+    private void showSwapCards(boolean show) {
+        showPreservingView(R.id.swap_cards, show);
     }
 
     // Show the white cards
@@ -740,14 +736,9 @@ public class GameActivity extends AppCompatActivity {
         mCardsAdapter.setSelected(cardText);
     }
 
-    // Update the text of the scoreboard
-//    public void updateScoreboard(@NonNull String scoresText) {
-//        ((TextView)findViewById(R.id.score_board)).setText(scoresText);
-//    }
-
     // Show the scoreboard
     public void showScoreboard(boolean show) {
-        showView(R.id.score_board, show);
+        showPreservingView(R.id.score_board, show);
     }
 
     // Enable/disable selecting white cards via clicking
@@ -792,6 +783,14 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
         view.setVisibility(show? View.VISIBLE : View.GONE);
+    }
+
+    private void showPreservingView(int viewId, boolean show) {
+        View view = findViewById(viewId);
+        if (view == null) {
+            return;
+        }
+        view.setVisibility(show? View.VISIBLE : View.INVISIBLE);
     }
 
     // Set the given text to the view of the given id
@@ -920,12 +919,6 @@ public class GameActivity extends AppCompatActivity {
         // Show the cards and the scoreboard
         showWhiteCards(hasWinner);
 
-        // Update the scoreboard before we show it
-        String scores = "";
-        for (Map.Entry<String, Integer> entry : gameState.getScoreboard().entrySet()) {
-            scores += entry.getKey() + ": " + entry.getValue() + "\n";
-        }
-        //updateScoreboard(scores);
         showScoreboard(true);
 
         // Show the black card

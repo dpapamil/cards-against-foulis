@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 
+import static java.lang.StrictMath.max;
+
 
 public class ScoreViewHolder extends RecyclerView.ViewHolder {
     // The views of the holder
@@ -15,6 +17,8 @@ public class ScoreViewHolder extends RecyclerView.ViewHolder {
     private TextView mNameView = null;
     private TextView mScoreView = null;
 
+    private final int sFontSize = 24;
+    private final int sMinFontSize = 12;
 
     public ScoreViewHolder(View itemView) {
         super(itemView);
@@ -29,7 +33,8 @@ public class ScoreViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void setFontSize(int position) {
-        mNameView.setTextSize(22 - position);
-        mScoreView.setTextSize(22 - position);
+        int fontSize = max(sFontSize - position * 2, sMinFontSize);
+        mNameView.setTextSize(fontSize);
+        mScoreView.setTextSize(fontSize);
     }
 }
