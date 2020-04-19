@@ -33,7 +33,7 @@ public class ScoreViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void setFontSize(int position) {
-        int fontSize = max(sFontSize - position * 2, sMinFontSize);
+        int fontSize = max(sFontSize - position * 3, sMinFontSize);
         mNameView.setTextSize(fontSize);
         mScoreView.setTextSize(fontSize);
     }

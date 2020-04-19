@@ -27,6 +27,11 @@ public class ScoreBoard {
         }
     }
 
+    public void copyFrom(@NonNull final ScoreBoard board) {
+        mScoreBoard.clear();
+        mScoreBoard.putAll(board.mScoreBoard);
+    }
+
     public int playerCount() {
         return mScoreBoard.size();
     }
@@ -43,6 +48,18 @@ public class ScoreBoard {
     public void increasePlayerScore(@NonNull GamePlayer player) {
         mScoreBoard.put(player, mScoreBoard.get(player) + 1);
         sort();
+    }
+
+    public int getPlayerPosition(@NonNull String playerName) {
+        Object[] playersArray = mScoreBoard.keySet().toArray();
+        for (int i = 0; i < playersArray.length; i++) {
+            GamePlayer player = (GamePlayer) playersArray[i];
+            if (player.getName().equals(playerName)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     // Sort the score board by the scores

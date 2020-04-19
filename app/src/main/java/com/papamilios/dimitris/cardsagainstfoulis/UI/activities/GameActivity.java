@@ -920,6 +920,9 @@ public class GameActivity extends AppCompatActivity {
         showWhiteCards(hasWinner);
 
         showScoreboard(true);
+        if (hasWinner) {
+            mScoreBoardAdapter.updateScoreBoard(gameState.getScoreboard());
+        }
 
         // Show the black card
         updateBlackCardView(gameState.getBlackCard().getText());
