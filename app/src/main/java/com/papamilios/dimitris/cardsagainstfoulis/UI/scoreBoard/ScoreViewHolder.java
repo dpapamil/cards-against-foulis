@@ -17,7 +17,7 @@ public class ScoreViewHolder extends RecyclerView.ViewHolder {
     private TextView mNameView = null;
     private TextView mScoreView = null;
 
-    private final int sFontSize = 40;
+    private final int sFontSize = 22;
     private final int sMinFontSize = 10;
 
     public ScoreViewHolder(View itemView) {
