@@ -734,7 +734,71 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
 
     // Show the scoreboard
     public void showScoreboard(boolean show) {
-        showPreservingView(R.id.score_board, show);
+        if (show) {
+            View scoreBoardView = findViewById(R.id.score_board);
+            if (scoreBoardView.getVisibility() == View.VISIBLE) {
+                return;
+            }
+            scoreBoardView.setVisibility(View.VISIBLE);
+
+            showView(R.id.score_board, true);
+            TranslateAnimation animate = new TranslateAnimation(
+                0,
+                0,
+                scoreBoardView.getHeight(),
+                0
+            );
+            animate.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            animate.setDuration(500);
+            animate.setFillAfter(true);
+            scoreBoardView.startAnimation(animate);
+        } else {
+            View scoreBoardView = findViewById(R.id.score_board);
+            if (scoreBoardView.getVisibility() == View.GONE) {
+                return;
+            }
+
+            showView(R.id.score_board, true);
+            TranslateAnimation animate = new TranslateAnimation(
+                    0,
+                    0,
+                    0,
+                    scoreBoardView.getHeight()
+            );
+            animate.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    findViewById(R.id.score_board).clearAnimation();
+                    showView(R.id.score_board, false);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            animate.setDuration(500);
+            animate.setFillAfter(true);
+            scoreBoardView.startAnimation(animate);
+        }
     }
 
     // Enable/disable selecting white cards via clicking

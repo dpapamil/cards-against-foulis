@@ -94,103 +94,123 @@
         </RelativeLayout>
 
         <LinearLayout
-            android:id="@+id/above_card_msgs"
+            android:id="@+id/game_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/above_card_msg"
-                style="@style/standardMessage"
-                android:text="@string/wait_for_others"/>
-
-            <TextView
-                android:id="@+id/above_card_important"
-                style="@style/standardMessage"
-                android:textStyle="bold"/>
-
-        </LinearLayout>
-
-        <LinearLayout style="@style/BlackCardBox">
-            <TextView android:id="@+id/cur_black_card" style="@style/blackCardText" />
-        </LinearLayout>
-
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent" >
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/white_cards"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_above="@id/wait_others"
-                tools:listitem="@layout/recyclerview_item" />
-
-            <TextView
-                android:id="@+id/wait_others"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_above="@id/game_buttons"
-                android:text="@string/wait_for_others"/>
+            android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/game_buttons"
-                android:orientation="vertical"
+                android:id="@+id/above_card_msgs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true">
+                android:orientation="horizontal">
 
-                <RelativeLayout
-                    android:orientation="horizontal"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent" >
+                <TextView
+                    android:id="@+id/above_card_msg"
+                    style="@style/standardMessage"
+                    android:text="@string/wait_for_others" />
 
-                    <ImageButton
-                        android:id="@+id/swap_cards"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_alignParentLeft="true"
-                        android:layout_centerVertical="true"
-                        android:layout_marginLeft="5dp"
-                        android:background="@color/AccentColor"
-                        android:onClick="onSwapCards"
-                        android:src="@android:drawable/ic_popup_sync" />
+                <TextView
+                    android:id="@+id/above_card_important"
+                    style="@style/standardMessage"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout style="@style/BlackCardBox">
+
+                <TextView
+                    android:id="@+id/cur_black_card"
+                    style="@style/blackCardText" />
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/white_cards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/wait_others"
+                    android:layout_alignParentTop="true"
+                    tools:listitem="@layout/recyclerview_item" />
+
+                <LinearLayout
+                    android:id="@+id/game_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:orientation="vertical">
 
                     <Button
-                        android:id="@+id/choose_white_card"
+                        android:id="@+id/next_round"
                         style="@style/GameButton"
-                        android:layout_centerInParent="true"
-                        android:onClick="onChooseWhiteCard"
-                        android:text="@string/choose_white_card" />
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:onClick="onGetNextRound"
+                        android:text="@string/next_black_card" />
 
-                </RelativeLayout>
-                <Button
-                    android:id="@+id/next_round"
-                    style="@style/GameButton"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:text="@string/next_black_card"
-                    android:onClick="onGetNextRound"/>
-            </LinearLayout>
-        </RelativeLayout>
+                    <RelativeLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/choose_white_card"
+                            style="@style/GameButton"
+                            android:layout_centerInParent="true"
+                            android:onClick="onChooseWhiteCard"
+                            android:text="@string/choose_white_card" />
+
+                        <ImageButton
+                            android:id="@+id/swap_cards"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentLeft="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginLeft="5dp"
+                            android:background="@color/AccentColor"
+                            android:onClick="onSwapCards"
+                            android:src="@android:drawable/ic_popup_sync" />
+
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/wait_others"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@id/game_buttons"
+                    android:text="@string/wait_for_others" />
+
+            </RelativeLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- ROOM EVENT POPUP -->
-    <LinearLayout android:id="@+id/room_event_popup" style="@style/InvPopup">
-        <TextView android:id="@+id/room_event_popup_text" style="@style/InvPopupText" />
-        <Button android:id="@+id/close_popup"
+    <LinearLayout
+        android:id="@+id/room_event_popup"
+        style="@style/InvPopup">
+
+        <Button
+            android:id="@+id/close_popup"
             style="@style/InvPopupButton"
-            android:text="@android:string/ok"
-            android:onClick="onCloseRoomEventPopup"/>
+            android:onClick="onCloseRoomEventPopup"
+            android:text="@android:string/ok" />
+
+        <TextView
+            android:id="@+id/room_event_popup_text"
+            style="@style/InvPopupText" />
     </LinearLayout>
 
 
     <!-- IN-APP CHAT -->
     <LinearLayout
         android:id="@+id/in_app_chat"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
         <include layout="@layout/chat_layout" />
     </LinearLayout>
 
