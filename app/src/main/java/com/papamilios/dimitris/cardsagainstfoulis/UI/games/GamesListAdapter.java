@@ -4,8 +4,10 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.papamilios.dimitris.cardsagainstfoulis.R;
@@ -13,7 +15,9 @@ import com.papamilios.dimitris.cardsagainstfoulis.R;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GamesListAdapter extends RecyclerView.Adapter<GameViewHolder> implements GameViewHolder.OnItemSelectedListener  {
 
@@ -21,9 +25,17 @@ public class GamesListAdapter extends RecyclerView.Adapter<GameViewHolder> imple
     private List<GameInfo> mGames = Collections.emptyList(); // Cached copy of words
     private int mSelectedPos = -1;
     private List<GameViewHolder> mViewHolders = new ArrayList<GameViewHolder>();
+    private Set<GameSelectionListener> mListeners = new HashSet<GameSelectionListener>();
 
     public GamesListAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
+    }
+
+    public void addListener(GameSelectionListener listener) {
+        mListeners.add(listener);
+    }
+    public void removeListener(GameSelectionListener listener) {
+        mListeners.remove(listener);
     }
 
     @Override
@@ -102,5 +114,18 @@ public class GamesListAdapter extends RecyclerView.Adapter<GameViewHolder> imple
             mSelectedPos = index;
         }
         notifyDataSetChanged();
+        notifyListeners();
+    }
+
+    private void notifyListeners() {
+        for (GameSelectionListener listener : mListeners) {
+            listener.onSelectionChanged();
+        }
+    }
+
+    // A listener interface to listen to selection events
+    public interface GameSelectionListener {
+
+        public void onSelectionChanged();
     }
 }

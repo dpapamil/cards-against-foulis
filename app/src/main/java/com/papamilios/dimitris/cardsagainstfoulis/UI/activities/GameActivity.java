@@ -66,7 +66,7 @@ import androidx.recyclerview.widget.RecyclerView;
 *  The activity to hold the game screen.
  */
 
-public class GameActivity extends AppCompatActivity {
+public class GameActivity extends AppCompatActivity implements GamesListAdapter.GameSelectionListener {
 
     final static String TAG = "CardsAgainstFoulis";
 
@@ -178,6 +178,7 @@ public class GameActivity extends AppCompatActivity {
         mGamesListAdapter = new GamesListAdapter(this);
         recyclerGamesView.setAdapter(mGamesListAdapter);
         recyclerGamesView.setLayoutManager(new LinearLayoutManager(this));
+        mGamesListAdapter.addListener(this);
 
         RecyclerView recyclerScoreBoardView = findViewById(R.id.score_board);
         mScoreBoardAdapter = new ScoreBoardAdapter(this);
@@ -474,12 +475,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void joinGame() {
-
-//        if (mJoinGameBtn == null) {
-//            mJoinGameBtn = findViewById(R.id.join_game);
-//        }
-//        mJoinGameBtn.setEnabled(true);
-
+        findViewById(R.id.join_game).setEnabled(false);
 
         DatabaseReference gamesRef = FirebaseDatabase.getInstance().getReference().child("games");
         mGamesListener = new ValueEventListener() {
@@ -510,7 +506,6 @@ public class GameActivity extends AppCompatActivity {
                 mGamesListAdapter.setGames(availableGames);
 
                 switchToScreen(R.id.screen_join_game);
-                findViewById(R.id.join_game).setEnabled(mGamesListAdapter.getItemCount() > 0);
             }
 
             @Override
@@ -801,6 +796,12 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
         view.setText(text);
+    }
+
+    @Override
+    public void onSelectionChanged() {
+        View joinGameBtn = findViewById(R.id.join_game);
+        joinGameBtn.setEnabled(mGamesListAdapter.getSelectedGame() != null);
     }
 
     // Get the specified resource string
