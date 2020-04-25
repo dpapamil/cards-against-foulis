@@ -27,6 +27,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PlayGamesAuthProvider;
+import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -53,7 +54,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -420,7 +420,7 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
 
         gameRef.child("users").addValueEventListener(mUsersListener);
 
-        gameRef.child("users/" + userId + "/name").setValue(mFirebaseAuth.getCurrentUser().getDisplayName());
+        gameRef.child("users/" + userId + "/name").setValue(getUserName());
 
         ValueEventListener startedListener = new ValueEventListener() {
             @Override
@@ -456,9 +456,9 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
         mGameId = gameRef.getKey();
         String userId = mFirebaseAuth.getCurrentUser().getUid();
         HashMap<String, Object> gameInformation = new HashMap<String, Object>();
-        gameInformation.put("users/" + userId + "/name", mFirebaseAuth.getCurrentUser().getDisplayName());
+        gameInformation.put("users/" + userId + "/name", getUserName());
         gameInformation.put("host/id", userId);
-        gameInformation.put("host/displayName", mFirebaseAuth.getCurrentUser().getDisplayName());
+        gameInformation.put("host/displayName", getUserName());
         gameInformation.put("started", false);
         gameInformation.put("created", new Date());
         gameRef.updateChildren(gameInformation);
@@ -472,6 +472,17 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
         gameIdTextView.setTextIsSelectable(true);
 
         gameRef.child("users").addValueEventListener(mUsersListener);
+    }
+
+    private String getUserName() {
+        String userName = mFirebaseAuth.getCurrentUser().getDisplayName();
+        List<UserInfo> userInfos = (List<UserInfo>) mFirebaseAuth.getCurrentUser().getProviderData();
+        for (UserInfo userInfo : userInfos) {
+            if (userInfo.getProviderId().equals("playgames.google.com")) {
+                userName = userInfo.getDisplayName();
+            }
+        }
+        return userName;
     }
 
     public void joinGame() {
@@ -634,7 +645,7 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mFirebaseAuth.getCurrentUser();
                             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid());
-                            userRef.child("displayName").setValue(user.getDisplayName());
+                            userRef.child("displayName").setValue(getUserName());
                             if (mGameId == null) {
                                 if (mJoining) {
                                     joinGame();
