@@ -47,5 +47,5 @@ public class CardViewModel extends AndroidViewModel {
         mRepository.update(card);
     }
 
-    public void deleteAll() { mRepository.deleteAll(); }
+    public void deleteAll() { mRepository.deleteAll(null); }
 }

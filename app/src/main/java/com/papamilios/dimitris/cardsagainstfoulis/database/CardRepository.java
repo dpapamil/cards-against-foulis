@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import android.os.AsyncTask;
 
 import java.util.List;
+import java.util.function.Function;
 
 /*
  *  The repository of the card database.
@@ -44,8 +45,8 @@ public class CardRepository {
         new insertAsyncTask(mCardDao, false).execute(card);
     }
 
-    public void deleteAll() {
-        deleteAllAsyncTask deleteTask = new deleteAllAsyncTask(mCardDao);
+    public void deleteAll(Function<Void, Void> onSucceed) {
+        deleteAllAsyncTask deleteTask = new deleteAllAsyncTask(mCardDao, onSucceed);
         deleteTask.execute();
     }
 
@@ -73,15 +74,24 @@ public class CardRepository {
     private static class deleteAllAsyncTask extends AsyncTask<Void, Void, Void> {
 
         private CardDao mAsyncTaskDao;
+        private Function<Void, Void> mOnSucceed;
 
-        deleteAllAsyncTask(CardDao dao) {
+        deleteAllAsyncTask(CardDao dao, Function<Void, Void> onSucceed) {
             mAsyncTaskDao = dao;
+            mOnSucceed = onSucceed;
         }
 
         @Override
         protected Void doInBackground(final Void... params) {
             mAsyncTaskDao.deleteAll();
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void arg) {
+            if (mOnSucceed != null) {
+                mOnSucceed.apply(arg);
+            }
         }
     }
 }

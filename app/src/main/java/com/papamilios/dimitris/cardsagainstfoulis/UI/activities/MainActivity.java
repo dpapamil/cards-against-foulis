@@ -3,49 +3,41 @@ package com.papamilios.dimitris.cardsagainstfoulis.UI.activities;
 /*  * Copyright (C) 2018 Cards Against Foulis Co.  */
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.games.Games;
-import com.google.android.gms.games.GamesCallbackStatusCodes;
-import com.google.android.gms.games.GamesClient;
-import com.google.android.gms.games.GamesClientStatusCodes;
-import com.google.android.gms.games.InvitationsClient;
-import com.google.android.gms.games.multiplayer.Invitation;
-import com.google.android.gms.games.multiplayer.InvitationCallback;
-import com.google.android.gms.games.multiplayer.Multiplayer;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PlayGamesAuthProvider;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
 import com.papamilios.dimitris.cardsagainstfoulis.database.Card;
 import com.papamilios.dimitris.cardsagainstfoulis.database.CardRepository;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellValue;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -61,8 +53,11 @@ public class MainActivity extends AppCompatActivity {
     public static final String WHITE_CARDS = "com.papamilios.dimitris.cardsagainstfoulis.WHITE_CARDS";
     public static final String JOINING = "com.papamilios.dimitris.cardsagainstfoulis.JOINING";
 
+    private static final String cardsSheetId = "1LCb9xQs3Vt496xXUFAfvPvONvq8qkVFM5pwJPPGmRSc";
+
     // Request code used to invoke sign in user interactions.
     private static final int RC_SIGN_IN = 9001;
+    private static final int RC_AUTHORIZE_SHEETS = 9002;
 
     // Client used to sign in with Google APIs
     private GoogleSignInClient mGoogleSignInClient = null;
@@ -73,10 +68,13 @@ public class MainActivity extends AppCompatActivity {
     // The Firebase authentication object
     private FirebaseAuth mFirebaseAuth = null;
 
+    // The card repository
+    private CardRepository mCardsRepo;
+
     // This array lists all the individual screens our game has.
     final static int[] SCREENS = {
         R.id.screen_main,
-        R.id.screen_sign_in,
+        R.id.screen_sign_in
     };
     int mCurScreen = -1;
 
@@ -88,9 +86,12 @@ public class MainActivity extends AppCompatActivity {
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar_main);
         myToolbar.inflateMenu(R.menu.menu_main);
         setSupportActionBar(myToolbar);
+        mCardsRepo = new CardRepository(getApplication());
 
         // Create the client used to sign in.
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
+            .requestScopes(new Scope(SheetsScopes.SPREADSHEETS))
+            .requestEmail()
             .requestServerAuthCode(getString(R.string.default_web_client_id))
             .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -162,37 +163,62 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private class LoadCardsTask extends AsyncTask<Void, Void, Void> {
+
+        private final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+        private final String cellRange = "Sheet1!A2:B";
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                NetHttpTransport transport = new com.google.api.client.http.javanet.NetHttpTransport();
+                JsonFactory factory = JacksonFactory.getDefaultInstance();
+                GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), SCOPES);
+                credential.setSelectedAccount(mSignedInAccount.getAccount());
+                final Sheets sheetsService = new Sheets.Builder(transport, factory, credential)
+                        .setApplicationName(getApplication().getApplicationInfo().name)
+                        .build();
+                ValueRange result = sheetsService.spreadsheets().values().get(cardsSheetId, cellRange).execute();
+                int numRows = result.getValues() != null ? result.getValues().size() : 0;
+
+                for (int r = 1; r < numRows; r++) {
+                    for (int c = 0; c < 2; c++) {
+                        String cardText = result.getValues().get(r).get(c).toString();
+                        if (cardText == null || cardText.trim().isEmpty()) {
+                            continue;
+                        }
+                        cardText = cardText.trim();
+                        Card card = new Card(0, cardText, c == 1);
+                        mCardsRepo.insert(card);
+                    }
+                }
+
+            } catch (UserRecoverableAuthIOException e) {
+                startActivityForResult(e.getIntent(), RC_AUTHORIZE_SHEETS);
+            }catch (Exception e) {
+                return null;
+            } finally {
+
+            }
+            return null;
+        }
+    }
+
     // Event handler for loading the cards from an excel file
     public void onLoadCards(View view) {
-        InputStream stream = getResources().openRawResource(R.raw.cards);
-        try {
-            CardRepository repo = new CardRepository(getApplication());
-            XSSFWorkbook workbook = new XSSFWorkbook(stream);
-            XSSFSheet sheet = workbook.getSheetAt(0);
-            int rowsCount = sheet.getPhysicalNumberOfRows();
-            FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
-            for (int r = 1; r < rowsCount; r++) {
-                Row row = sheet.getRow(r);
-                for (int c = 0; c < 2; c++) {
-                    Cell cell = row.getCell(c);
-                    CellValue cellValue = formulaEvaluator.evaluate(cell);
-                    if (cellValue == null) {
-                        continue;
-                    }
-                    String cardText = cellValue.getStringValue();
-                    Card card = new Card(0, cardText, c == 1);
-                    repo.insert(card);
-                }
-            }
+        loadCards();
+    }
 
-        } catch (Exception e) {
-            /* proper exception handling to be here */
-            Log.d(TAG, e.toString());
-        }
+    private void loadCards() {
+        mCardsRepo.deleteAll(Void -> {
+            new LoadCardsTask().execute();
+            return Void;
+        });
     }
 
     // Event handler for clicking the Start Game button
     public void onStartGame(View view) {
+        loadCards();
         Intent intent = new Intent(MainActivity.this, GameActivity.class);
         intent.putExtra(JOINING, false);
         startActivity(intent);
@@ -326,6 +352,8 @@ public class MainActivity extends AppCompatActivity {
                     .show();
             }
 
+        } else if (requestCode == RC_AUTHORIZE_SHEETS) {
+            loadCards();
         }
         super.onActivityResult(requestCode, resultCode, intent);
     }
