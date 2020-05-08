@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GamePlayer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ScoreBoard {
+public class ScoreBoard implements Serializable {
     private LinkedHashMap<GamePlayer, Integer> mScoreBoard = new LinkedHashMap<GamePlayer, Integer>();
 
     public void initialiseBoard(@NonNull List<GamePlayer> players) {

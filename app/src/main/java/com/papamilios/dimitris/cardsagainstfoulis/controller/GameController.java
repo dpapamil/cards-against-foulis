@@ -63,6 +63,7 @@ public class GameController {
     // The game state
     private GameState mGameState = new GameState();
 
+    private int mGoalScore = 10;
 
     public GameController(GameActivity activity) {
         mGameActivity = activity;
@@ -79,6 +80,7 @@ public class GameController {
     public void setPlayers(@NonNull List<GamePlayer> players) {
         mPlayers = players;
     }
+    public void setGoalScore(int score) { mGoalScore = score; }
     public List<GamePlayer> getPlayers() { return mPlayers; }
     public void setHostId(@NonNull String id) { mHostId = id; }
 
@@ -296,6 +298,12 @@ public class GameController {
                 mGameState.increaseScore(winner.getName());
                 break;
             }
+        }
+
+        if (mGameState.getScoreboard().getScore(0).intValue() == mGoalScore) {
+            // We have a winner!!
+            mGameActivity.endGame(mGameState);
+            return;
         }
 
         if (winnerId == null) {
