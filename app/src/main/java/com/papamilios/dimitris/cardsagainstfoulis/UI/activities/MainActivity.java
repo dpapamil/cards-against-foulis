@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create the client used to sign in.
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
-            .requestScopes(new Scope(SheetsScopes.SPREADSHEETS))
+            .requestScopes(new Scope(SheetsScopes.SPREADSHEETS_READONLY))
             .requestEmail()
             .requestServerAuthCode(getString(R.string.default_web_client_id))
             .build();
