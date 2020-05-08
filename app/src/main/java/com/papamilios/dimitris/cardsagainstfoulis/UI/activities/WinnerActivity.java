@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -18,16 +17,20 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.papamilios.dimitris.cardsagainstfoulis.BuildConfig;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
-import com.papamilios.dimitris.cardsagainstfoulis.UI.games.GameInfo;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.scoreBoard.ScoreBoard;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.scoreBoard.ScoreBoardAdapter;
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WinnerActivity extends AppCompatActivity {
+
+    private final String sAllTimeScoreStr = BuildConfig.DEBUG ? "test/allTimeScore" : "allTimeScore";
+    private final String sWinsStr = BuildConfig.DEBUG ? "test/wins" : "wins";
+    private final String sGamesPlayedStr = BuildConfig.DEBUG ? "test/gamesPlayed" : "gamesPlayed";
 
     private ScoreBoard mScoreboard = null;
     private ScoreBoardAdapter mScoreBoardAdapter = null;
@@ -50,7 +53,10 @@ public class WinnerActivity extends AppCompatActivity {
             gameRef.removeValue();
         }
 
-        updateMyScore(mScoreboard.getScore(username).intValue());
+        updateMyScore(
+            mScoreboard.getScore(username).intValue(),
+            mScoreboard.getPlayerPosition(username) == 0
+        );
 
         RecyclerView recyclerScoreBoardView = findViewById(R.id.score_board);
         mScoreBoardAdapter = new ScoreBoardAdapter(this);
@@ -109,21 +115,33 @@ public class WinnerActivity extends AppCompatActivity {
         finish();
     }
 
-    private void updateMyScore(final int pointsScored) {
+    private void updateMyScore(final int pointsScored, boolean isWinner) {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         String userId = firebaseAuth.getCurrentUser().getUid();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference userRef = database.getReference("users").child(userId);
-        DatabaseReference userScore = userRef.child("allTimeScore");
         ValueEventListener userScoreListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 int currentScore = 0;
-                if (dataSnapshot.child("allTimeScore").exists()) {
-                    currentScore = Integer.parseInt(dataSnapshot.child("allTimeScore").getValue().toString());
+                int numWins = 0;
+                int gamesPLayed = 0;
+                if (dataSnapshot.child(sAllTimeScoreStr).exists()) {
+                    currentScore = Integer.parseInt(dataSnapshot.child(sAllTimeScoreStr).getValue().toString());
                 }
-                int newScore = currentScore + pointsScored;
-                userScore.setValue(newScore);
+                if (dataSnapshot.child(sWinsStr).exists()) {
+                    numWins = Integer.parseInt(dataSnapshot.child(sWinsStr).getValue().toString());
+                }
+                if (dataSnapshot.child(sGamesPlayedStr).exists()) {
+                    gamesPLayed = Integer.parseInt(dataSnapshot.child(sGamesPlayedStr).getValue().toString());
+                }
+
+                // Update with new statistics
+                Map<String, Object> data = new HashMap<String, Object>();
+                data.put(sAllTimeScoreStr, currentScore + pointsScored);
+                data.put(sGamesPlayedStr, gamesPLayed + 1);
+                data.put(sWinsStr, isWinner ? numWins + 1 : numWins);
+                userRef.updateChildren(data);
             }
 
             @Override
