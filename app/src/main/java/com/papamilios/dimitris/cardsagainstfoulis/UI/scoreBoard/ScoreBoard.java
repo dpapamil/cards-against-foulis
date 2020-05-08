@@ -40,6 +40,10 @@ public class ScoreBoard implements Serializable {
     public Integer getScore(int index) {
         return (Integer) mScoreBoard.values().toArray()[index];
     }
+    public Integer getScore(@NonNull String playerName) {
+        return getScore(getPlayerPosition(playerName));
+    }
+
 
     public GamePlayer getPlayer(int index) {
         return (GamePlayer) (mScoreBoard.keySet().toArray())[index];

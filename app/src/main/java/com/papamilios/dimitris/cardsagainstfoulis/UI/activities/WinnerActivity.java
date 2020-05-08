@@ -7,17 +7,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserInfo;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.games.GameInfo;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.scoreBoard.ScoreBoard;
 import com.papamilios.dimitris.cardsagainstfoulis.UI.scoreBoard.ScoreBoardAdapter;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class WinnerActivity extends AppCompatActivity {
@@ -34,6 +41,7 @@ public class WinnerActivity extends AppCompatActivity {
         Intent intent = getIntent();
         mScoreboard = (ScoreBoard)intent.getSerializableExtra(GameActivity.SCOREBOARD);
         String gameId = intent.getStringExtra(GameActivity.GAME_ID);
+        String username = getUserName();
 
         if (gameId != null) {
             // Remove the game we just finished
@@ -42,6 +50,8 @@ public class WinnerActivity extends AppCompatActivity {
             gameRef.removeValue();
         }
 
+        updateMyScore(mScoreboard.getScore(username).intValue());
+
         RecyclerView recyclerScoreBoardView = findViewById(R.id.score_board);
         mScoreBoardAdapter = new ScoreBoardAdapter(this);
         recyclerScoreBoardView.setAdapter(mScoreBoardAdapter);
@@ -49,7 +59,6 @@ public class WinnerActivity extends AppCompatActivity {
         mScoreBoardAdapter.initialiseScoreBoard(mScoreboard);
 
         int mediaResource = R.raw.loser;
-        String username = getUserName();
         int finishingPosition = mScoreboard.getPlayerPosition(username);
         if (finishingPosition == 0) {
             ImageView image = (ImageView)findViewById(R.id.winnerImage);
@@ -98,5 +107,29 @@ public class WinnerActivity extends AppCompatActivity {
     public void onGoHome(View view) {
         mMediaPlayer.stop();
         finish();
+    }
+
+    private void updateMyScore(final int pointsScored) {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        String userId = firebaseAuth.getCurrentUser().getUid();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference userRef = database.getReference("users").child(userId);
+        DatabaseReference userScore = userRef.child("allTimeScore");
+        ValueEventListener userScoreListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                int currentScore = 0;
+                if (dataSnapshot.child("allTimeScore").exists()) {
+                    currentScore = Integer.parseInt(dataSnapshot.child("allTimeScore").getValue().toString());
+                }
+                int newScore = currentScore + pointsScored;
+                userScore.setValue(newScore);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        };
+        userRef.addListenerForSingleValueEvent(userScoreListener);
     }
 }
