@@ -5,7 +5,9 @@ package com.papamilios.dimitris.cardsagainstfoulis.controller;
 
 import androidx.annotation.NonNull;
 
-public class GamePlayer {
+import java.io.Serializable;
+
+public class GamePlayer implements Serializable {
     private String mId = null;
     private String mName = null;
 

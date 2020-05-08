@@ -52,6 +52,11 @@ public class ScoreBoardAdapter extends RecyclerView.Adapter<ScoreViewHolder> {
         notifyDataSetChanged();
     }
 
+    public void initialiseScoreBoard(@NonNull ScoreBoard scoreBoard) {
+        mScoreBoard = scoreBoard;
+        notifyDataSetChanged();
+    }
+
     public void updateScoreBoard(@NonNull ScoreBoard updatedScoreBoard) {
         if (updatedScoreBoard.playerCount() != mScoreBoard.playerCount()) {
             throw new AssertionError("We can only have the same number of players");

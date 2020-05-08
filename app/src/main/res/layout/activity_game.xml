@@ -32,6 +32,15 @@
             android:inputType="none"
             android:textIsSelectable="true"/>
 
+        <EditText
+            android:id="@+id/up_to"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/up_to"
+            android:digits="0123456789"
+            android:inputType="number"
+            android:text="@string/default_goal_score" />
+
         <TextView style="@style/Blurb" android:text="@string/waiting_players_join" />
         <TextView style="@style/Blurb" android:text="@string/joined_players" />
         <TextView android:id="@+id/joined_players" style="@style/ScoreText" />

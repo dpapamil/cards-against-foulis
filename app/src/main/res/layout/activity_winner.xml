@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="@dimen/big_padding"
+    android:paddingBottom="@dimen/big_padding"
+    tools:context=".UI.activities.WinnerActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="20dp"
+        android:paddingTop="5dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="5dp"
+        tools:layout_editor_absoluteY="16dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/winnerImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="35dp"
+                app:srcCompat="@drawable/loser" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/score_board"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/winnerImage"
+                tools:listitem="@layout/score_board_item">
+
+            </androidx.recyclerview.widget.RecyclerView>
+
+        </RelativeLayout>
+
+        <Button
+            android:id="@+id/home"
+            style="@style/GameButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_margin="10dp"
+            android:onClick="onGoHome"
+            android:text="@string/home_button" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -26,6 +26,8 @@ limitations under the License. -->
     <string name="sign_in">Sign In</string>
     <string name="button_save">Save</string>
 
+    <string name="home_button">Home</string>
+
     <string name="is_inviting_you">is challenging you to a game!</string>
 
     <string name="signin_other_error">There was an issue with sign in. Please try again later.</string>
@@ -41,6 +43,8 @@ limitations under the License. -->
     <string name="empty_not_saved">Card not saved because it is empty.</string>
 
     <string name="created_game">Created game ID</string>
+    <string name="up_to">Up to ...</string>
+    <string name="default_goal_score">10</string>
     <string name="waiting_players_join">Waiting for players to join</string>
     <string name="joined_players">Players that joined: \u0020</string>
 

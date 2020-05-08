@@ -73,6 +73,9 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
     // Request code used to invoke sign in user interactions.
     private static final int RC_SIGN_IN = 9001;
 
+    public static final String SCOREBOARD = "com.papamilios.dimitris.cardsagainstfoulis.SCOREBOARD";
+    public static final String GAME_ID = "com.papamilios.dimitris.cardsagainstfoulis.GAME_ID";
+
     // Client used to sign in with Google APIs
     private GoogleSignInClient mGoogleSignInClient = null;
     // The currently signed in account, used to check the account has changed outside of this activity when resuming.
@@ -383,11 +386,20 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
     }
 
     public void onStartGame(View view) {
+        EditText goalView = (EditText) findViewById(R.id.up_to);
+        int goal = Integer.parseInt(goalView.getText().toString());
+        mController.setGoalScore(goal);
+
+        HashMap<String, Object> gameState = new HashMap<String, Object>();
+        gameState.put("up_to", goal);
+        gameState.put("started", true);
+
         switchToMainScreen();
         keepScreenOn();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference gameRef = database.getReference("games").child(mGameId);
-        gameRef.child("started").setValue(true);
+        gameRef.child("state").updateChildren(gameState);
+
         mGameStarted = true;
         mScoreBoardAdapter.initialiseScoreBoard(mController.getPlayers());
         mController.startGame(mGameId);
@@ -425,7 +437,8 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
         ValueEventListener startedListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (!mGameStarted && dataSnapshot.getValue().equals(true)) {
+                if (!mGameStarted && dataSnapshot.child("started").getValue().equals(true)) {
+                    mController.setGoalScore(Integer.parseInt(dataSnapshot.child("up_to").getValue().toString()));
                     switchToMainScreen();
                     keepScreenOn();
                     mGameStarted = true;
@@ -440,7 +453,7 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
                 Log.w(TAG, "loadUsers:onCancelled", databaseError.toException());
             }
         };
-        gameRef.child("started").addValueEventListener(startedListener);
+        gameRef.child("state").addValueEventListener(startedListener);
 
     }
 
@@ -459,7 +472,8 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
         gameInformation.put("users/" + userId + "/name", getUserName());
         gameInformation.put("host/id", userId);
         gameInformation.put("host/displayName", getUserName());
-        gameInformation.put("started", false);
+        gameInformation.put("state/started", false);
+        gameInformation.put("state/up_to", 10);
         gameInformation.put("created", new Date());
         gameRef.updateChildren(gameInformation);
         mController.setHostId(userId);
@@ -497,7 +511,7 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
                 }
                 List<GameInfo> availableGames = new ArrayList<GameInfo>();
                 for (DataSnapshot game : dataSnapshot.getChildren()) {
-                    if (game.child("started").getValue().equals(true)) {
+                    if (game.child("state/started").getValue().equals(true)) {
                         continue;
                     }
 
@@ -533,6 +547,17 @@ public class GameActivity extends AppCompatActivity implements GamesListAdapter.
         showPreservingView(R.id.got_message, !mInChat);
         RecyclerView recyclerChatView = findViewById(R.id.reyclerview_message_list);
         recyclerChatView.smoothScrollToPosition(mChatMessageAdapter.getItemCount() - 1);
+    }
+
+    // End the game
+    public void endGame(GameState state) {
+        Intent intent = new Intent(GameActivity.this, WinnerActivity.class);
+        intent.putExtra(SCOREBOARD, state.getScoreboard());
+        if (!mJoining) {
+            intent.putExtra(GAME_ID, mGameId);
+        }
+        finish();
+        startActivity(intent);
     }
 
     /**
