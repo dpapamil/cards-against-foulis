@@ -77,4 +77,13 @@ limitations under the License. -->
 
     <string name="players_left">The following players/assholes left the game: \u0020</string>
 
+    <string name="leader_board">Leaders</string>
+    <string name="leader_title">Who is the most Foulis?</string>
+    <string name="rank">#</string>
+    <string name="player_name">Player</string>
+    <string name="points">Pts</string>
+    <string name="games_played">GP</string>
+    <string name="wins">W</string>
+    <string name="percentage">Pct</string>
+
 </resources>

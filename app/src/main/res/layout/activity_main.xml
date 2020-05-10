@@ -38,6 +38,12 @@
     <LinearLayout android:id="@+id/screen_main" style="@style/LLScreen">
 
         <Button
+            android:id="@+id/leader_board_btn"
+            style="@style/GameButton"
+            android:text="@string/leader_board"
+            android:onClick="onShowLeaderBoard"/>
+
+        <Button
             android:id="@+id/join_game_btn"
             style="@style/GameButton"
             android:onClick="onJoinGame"

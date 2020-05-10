@@ -231,6 +231,12 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    // Show the leader board
+    public void onShowLeaderBoard(View view) {
+        Intent intent = new Intent(MainActivity.this, LeaderboardActivity.class);
+        startActivity(intent);
+    }
+
     // Event handler for clicking the Sign In button
     public void onSignIn(View view) {
         // start the sign-in flow

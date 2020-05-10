@@ -21,8 +21,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".UI.activities.CardsActivity" />
-
         <activity android:name=".UI.activities.NewCardActivity" />
+        <activity android:name=".UI.activities.LeaderboardActivity"></activity>
         <activity
             android:name=".UI.activities.GameActivity"
             android:screenOrientation="portrait" />
