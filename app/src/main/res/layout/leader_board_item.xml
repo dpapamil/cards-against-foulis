@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="2dp"
+    android:showDividers="middle|beginning|end">
+
+    <TextView
+        android:id="@+id/rank"
+        style="@style/ScoreText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="2dp"
+        android:textAlignment="viewStart" />
+
+    <TextView
+        android:id="@+id/name"
+        style="@style/ScoreText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="2dp"
+        android:text="@string/player_name"
+        android:textAlignment="viewStart" />
+
+    <TextView
+        android:id="@+id/points"
+        style="@style/ScoreText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="2dp"
+        android:text="@string/points"
+        android:textAlignment="viewStart"/>
+
+    <TextView
+        android:id="@+id/wins"
+        style="@style/ScoreText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="2dp"
+        android:text="@string/wins"
+        android:textAlignment="viewStart" />
+
+    <TextView
+        android:id="@+id/games_played"
+        style="@style/ScoreText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="2dp"
+        android:text="@string/games_played"
+        android:textAlignment="viewStart"/>
+
+    <TextView
+        android:id="@+id/percent"
+        style="@style/ScoreText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="2dp"
+        android:text="@string/percentage"
+        android:textAlignment="viewStart"/>
+
+</TableRow>
