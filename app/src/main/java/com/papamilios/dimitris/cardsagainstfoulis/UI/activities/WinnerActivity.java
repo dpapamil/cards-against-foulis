@@ -33,6 +33,7 @@ public class WinnerActivity extends AppCompatActivity {
     private final String sGamesPlayedStr = BuildConfig.DEBUG ? "test/gamesPlayed" : "gamesPlayed";
 
     private ScoreBoard mScoreboard = null;
+    private String mGameId = null;
     private ScoreBoardAdapter mScoreBoardAdapter = null;
     private MediaPlayer mMediaPlayer = null;
 
@@ -46,15 +47,8 @@ public class WinnerActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         mScoreboard = (ScoreBoard)intent.getSerializableExtra(GameActivity.SCOREBOARD);
-        String gameId = intent.getStringExtra(GameActivity.GAME_ID);
+        mGameId = intent.getStringExtra(GameActivity.GAME_ID);
         String username = getUserName();
-
-        if (gameId != null) {
-            // Remove the game we just finished
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference gameRef = database.getReference("games").child(gameId);
-            gameRef.removeValue();
-        }
 
         updateMyScore(
             mScoreboard.getScore(username).intValue(),
@@ -82,14 +76,14 @@ public class WinnerActivity extends AppCompatActivity {
     // Activity is going to the background. We have to stop the player.
     @Override
     public void onStop() {
-        mMediaPlayer.stop();
+        stopActivity();
         super.onStop();
     }
 
     // Activity is going to the background. We have to stop the player.
     @Override
     public void onPause() {
-        mMediaPlayer.stop();
+        stopActivity();
         super.onPause();
     }
 
@@ -114,7 +108,7 @@ public class WinnerActivity extends AppCompatActivity {
     }
 
     public void onGoHome(View view) {
-        mMediaPlayer.stop();
+        stopActivity();
         finish();
     }
 
@@ -152,5 +146,16 @@ public class WinnerActivity extends AppCompatActivity {
             }
         };
         userRef.addListenerForSingleValueEvent(userScoreListener);
+    }
+
+    private void stopActivity() {
+        mMediaPlayer.stop();
+
+        if (mGameId != null) {
+            // Remove the game we just finished
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference gameRef = database.getReference("games").child(mGameId);
+            gameRef.removeValue();
+        }
     }
 }
