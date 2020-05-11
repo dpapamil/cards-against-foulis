@@ -4,6 +4,7 @@ package com.papamilios.dimitris.cardsagainstfoulis.database;
  * Copyright (C) 2018 Cards Against Foulis Co.
  */
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.room.Room;
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -11,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -19,9 +21,11 @@ import java.util.List;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
-
 @RunWith(AndroidJUnit4.class)
 public class CardDaoTest {
+
+    @Rule
+    public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
     private static final String TAG = "Testing Database";
 
