@@ -1,4 +1,4 @@
-package com.papamilios.dimitris.cardsagainstfoulis.UI.LeaderBoard;
+package com.papamilios.dimitris.cardsagainstfoulis.UI.leaderBoard;
 
 import androidx.annotation.NonNull;
 

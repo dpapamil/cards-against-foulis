@@ -14,8 +14,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.papamilios.dimitris.cardsagainstfoulis.R;
-import com.papamilios.dimitris.cardsagainstfoulis.UI.LeaderBoard.LeaderBoard;
-import com.papamilios.dimitris.cardsagainstfoulis.UI.LeaderBoard.PlayerStats;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.leaderBoard.LeaderBoard;
+import com.papamilios.dimitris.cardsagainstfoulis.UI.leaderBoard.PlayerStats;
 import com.papamilios.dimitris.cardsagainstfoulis.controller.GamePlayer;
 
 
